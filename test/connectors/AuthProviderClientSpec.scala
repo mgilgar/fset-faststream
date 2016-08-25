@@ -16,10 +16,24 @@
 
 package connectors
 
+import config.WSHttp
+import connectors.ExchangeObjects.Implicits._
+import connectors.ExchangeObjects._
+import mockws.MockWS
+import model.Exceptions.ConnectorException
+import org.mockito.Matchers._
+import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.libs.json.{Json, _}
+import play.api.mvc.Action
+import play.api.mvc.Results._
+import play.api.test.Helpers._
 import testkit.ShortTimeout
+import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse, _}
+
+import scala.concurrent.Future
 
 class AuthProviderClientSpec extends PlaySpec with MockitoSugar with ScalaFutures with ShortTimeout {
 
