@@ -16,13 +16,6 @@
 
 package model
 
-import model.SchemeType.SchemeType
-import play.api.libs.json.Json
-import reactivemongo.bson.Macros
-
-case class SelectedSchemes(schemes: List[SchemeType], orderAgreed: Boolean, eligible: Boolean)
-
-object SelectedSchemes {
-  implicit val selectedSchemesFormat = Json.format[SelectedSchemes]
-  implicit val selectedSchemesHandler = Macros.handler[SelectedSchemes]
+object FastPassDetailsExamples {
+  val civilServant = FastPassDetails(applicable = true, Some(FastPassType.CivilServant))
 }

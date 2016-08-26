@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package model
+package model.command
 
-import model.SchemeType.SchemeType
-import play.api.libs.json.Json
-import reactivemongo.bson.Macros
+import model.exchange.PartnerGraduateProgrammesExchange
 
-case class SelectedSchemes(schemes: List[SchemeType], orderAgreed: Boolean, eligible: Boolean)
-
-object SelectedSchemes {
-  implicit val selectedSchemesFormat = Json.format[SelectedSchemes]
-  implicit val selectedSchemesHandler = Macros.handler[SelectedSchemes]
+object PartnerGraduateProgrammesExchangeExamples {
+  val InterestedNotAll = PartnerGraduateProgrammesExchange(true, Some(List("Entrepreneur First", "Frontline")))
+  val NoInterested = PartnerGraduateProgrammesExchange(false, None)
 }

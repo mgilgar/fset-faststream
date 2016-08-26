@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package model
+package model.persisted
 
-import model.SchemeType.SchemeType
 import play.api.libs.json.Json
 import reactivemongo.bson.Macros
 
-case class SelectedSchemes(schemes: List[SchemeType], orderAgreed: Boolean, eligible: Boolean)
+case class PartnerGraduateProgrammes(interested: Boolean, partnerGraduateProgrammes: Option[List[String]])
 
-object SelectedSchemes {
-  implicit val selectedSchemesFormat = Json.format[SelectedSchemes]
-  implicit val selectedSchemesHandler = Macros.handler[SelectedSchemes]
+object PartnerGraduateProgrammes {
+  implicit val partnerGraduateProgrammesFormat = Json.format[PartnerGraduateProgrammes]
+  implicit val partnerGraduateProgrammesHandler = Macros.handler[PartnerGraduateProgrammes]
 }

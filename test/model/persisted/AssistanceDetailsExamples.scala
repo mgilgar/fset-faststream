@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package persisted
+package model.persisted
 
 import model.persisted.AssistanceDetails
 

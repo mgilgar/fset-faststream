@@ -16,46 +16,32 @@
 
 package services.testdata
 
-import connectors.testdata.ExchangeObjects.DataGenerationResponse
 import model.PersistedObjects.{ PersistedAnswer, PersistedQuestion }
-import model._
-import model.persisted.{ AssistanceDetails, ContactDetails, PersonalDetails }
-import org.joda.time.LocalDate
+import model.persisted.{ AssistanceDetails, PartnerGraduateProgrammes }
 import repositories._
 import repositories.application.GeneralApplicationRepository
 import repositories.assistancedetails.AssistanceDetailsRepository
-import repositories.contactdetails.ContactDetailsRepository
-import repositories.personaldetails.PersonalDetailsRepository
-import repositories.schemepreferences.SchemePreferencesRepository
+import repositories.partnergraduateprogrammes.PartnerGraduateProgrammesRepository
 import services.testdata.faker.DataFaker._
 import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
-object InProgressSchemePreferencesStatusGenerator extends InProgressSchemePreferencesStatusGenerator {
-  override val previousStatusGenerator = InProgressPersonalDetailsStatusGenerator
-  override val spRepository = schemePreferencesRepository
+object InProgressPartnerGraduateProgrammesStatusGenerator extends InProgressPartnerGraduateProgrammesStatusGenerator {
+  override val previousStatusGenerator = InProgressSchemePreferencesStatusGenerator
+  override val pgpRepository = faststreamPartnerGraduateProgrammesRepository
 }
 
-trait InProgressSchemePreferencesStatusGenerator extends ConstructiveGenerator {
-  val spRepository: SchemePreferencesRepository
+trait InProgressPartnerGraduateProgrammesStatusGenerator extends ConstructiveGenerator {
+  val pgpRepository: PartnerGraduateProgrammesRepository
 
-  // scalastyle:off method.length
   def generate(generationId: Int, generatorConfig: GeneratorConfig)(implicit hc: HeaderCarrier) = {
-    def getSchemePreferences: Future[SelectedSchemes] = {
-       Future.successful(SelectedSchemes(Random.schemeTypes, true, true))
-    }
-
     for {
       candidateInPreviousStatus <- previousStatusGenerator.generate(generationId, generatorConfig)
-      schemePreferences <- getSchemePreferences
-      _ <- spRepository.save(candidateInPreviousStatus.applicationId.get, schemePreferences)
+      _ <- pgpRepository.update(candidateInPreviousStatus.applicationId.get, PartnerGraduateProgrammes(true,
+        Some(List("Entrepreneur First", "Police Now"))))
     } yield {
-      candidateInPreviousStatus.copy(
-        schemePreferences = Some(schemePreferences)
-      )
+      candidateInPreviousStatus
     }
   }
-  // scalastyle:on method.length
 }

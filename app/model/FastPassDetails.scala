@@ -16,13 +16,19 @@
 
 package model
 
-import model.SchemeType.SchemeType
+import model.InternshipType.InternshipType
+import model.FastPassType.FastPassType
 import play.api.libs.json.Json
 import reactivemongo.bson.Macros
 
-case class SelectedSchemes(schemes: List[SchemeType], orderAgreed: Boolean, eligible: Boolean)
 
-object SelectedSchemes {
-  implicit val selectedSchemesFormat = Json.format[SelectedSchemes]
-  implicit val selectedSchemesHandler = Macros.handler[SelectedSchemes]
+case class FastPassDetails(applicable:Boolean,
+                           fastPassType:Option[FastPassType] = None,
+                           internshipTypes:Option[Seq[InternshipType]] = None,
+                           fastPassReceived:Option[Boolean] = None,
+                           certificateNumber:Option[String] = None)
+
+object FastPassDetails {
+  implicit val fastPassDetailsFormat = Json.format[FastPassDetails]
+  implicit val fastPassDetailsHandler = Macros.handler[FastPassDetails]
 }

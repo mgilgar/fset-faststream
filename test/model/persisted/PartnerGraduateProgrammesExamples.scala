@@ -16,7 +16,7 @@
 
 package model.persisted
 
-trait GeneralDetailsStatuses {
-  this: Enumeration =>
-  val CREATED, IN_PROGRESS, SUBMITTED = Value
+object PartnerGraduateProgrammesExamples {
+  val InterestedNotAll = PartnerGraduateProgrammes(true, Some(List("Entrepreneur First", "Frontline")))
+  val NoInterested = PartnerGraduateProgrammes(false, None)
 }

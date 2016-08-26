@@ -19,17 +19,20 @@ package model
 import play.api.libs.json.{ Format, JsString, JsSuccess, JsValue }
 import reactivemongo.bson.{ BSON, BSONHandler, BSONString }
 
-object ApplicationStatus extends Enumeration {
-  type ApplicationStatus = Value
-  val WITHDRAWN, CREATED, IN_PROGRESS, SUBMITTED = Value
+object InternshipType extends Enumeration {
 
-  implicit val applicationStatusFormat = new Format[ApplicationStatus] {
-    def reads(json: JsValue) = JsSuccess(ApplicationStatus.withName(json.as[String]))
-    def writes(myEnum: ApplicationStatus) = JsString(myEnum.toString)
+  type InternshipType = Value
+
+  val EDIP, SDIPPreviousYear, SDIPCurrentYear = Value
+
+  implicit val internshipTypeFormat = new Format[InternshipType] {
+    def reads(json: JsValue) = JsSuccess(InternshipType.withName(json.as[String]))
+    def writes(myEnum: InternshipType) = JsString(myEnum.toString)
   }
 
-  implicit object BSONEnumHandler extends BSONHandler[BSONString, ApplicationStatus] {
-    def read(doc: BSONString) = ApplicationStatus.withName(doc.value)
-    def write(stats: ApplicationStatus) = BSON.write(stats.toString)
+  implicit object BSONEnumHandler extends BSONHandler[BSONString, InternshipType] {
+    def read(doc: BSONString) = InternshipType.withName(doc.value)
+    def write(stats: InternshipType) = BSON.write(stats.toString)
   }
+
 }
