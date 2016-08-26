@@ -137,7 +137,7 @@ class GeneralApplicationMongoRepository(timeZoneService: TimeZoneService)(implic
     val lastName = psRoot.flatMap(_.getAs[String]("lastName"))
     val dateOfBirth = psRoot.flatMap(_.getAs[LocalDate]("dateOfBirth"))
 
-    Candidate(userId, applicationId, None, firstName, lastName, dateOfBirth, None, None)
+    Candidate(userId, applicationId, None, firstName, lastName, dateOfBirth, None, None, None)
   }
 
   def find(applicationIds: List[String]): Future[List[Candidate]] = {
@@ -212,11 +212,11 @@ class GeneralApplicationMongoRepository(timeZoneService: TimeZoneService)(implic
       case Some(document) =>
         val applicationId = document.getAs[String]("applicationId").get
         val applicationStatus = document.getAs[String]("applicationStatus").get
-        val fastPassReceived = document.getAs[FastPassDetails]("fastpass-details").flatMap(_.fastPassReceived)
+        val fastPassReceived = document.getAs[FastPassDetails]("fastpass-details")
         findProgress(applicationId).map { (p: ProgressResponse) =>
           ApplicationResponse(applicationId, applicationStatus, userId, p, fastPassReceived)
         }
-      case None => throw new ApplicationNotFound(userId)
+      case None => throw ApplicationNotFound(userId)
     }
     resp.flatMap(identity)
   }
