@@ -234,6 +234,16 @@ object Commands {
     info: Option[AssessmentCentrePassMarkInfo]
   )
 
+  final case class FastPassCertificateInfo(
+    userId: String,
+    applicationId: String,
+    firstName: String,
+    lastName: String,
+    preferredName: String,
+    certificateNumber: String,
+    submissionDate: LocalDate
+  )
+
   object Implicits {
     implicit val mediaFormats = Json.format[AddMedia]
 
@@ -287,5 +297,6 @@ object Commands {
     implicit val candidateScoresSummaryFormat = Json.format[CandidateScoresSummary]
     implicit val applicationPreferencesWithTestResults = Json.format[ApplicationPreferencesWithTestResults]
     implicit val assessmentCentreCandidatesReportFormat = Json.format[AssessmentCentreCandidatesReport]
+    implicit val fastPassCertificateInfoFormat = Json.format[FastPassCertificateInfo]
   }
 }

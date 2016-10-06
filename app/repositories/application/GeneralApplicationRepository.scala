@@ -124,6 +124,10 @@ trait GeneralApplicationRepository {
   def addProgressStatusAndUpdateAppStatus(applicationId: String, progressStatus: ProgressStatuses.ProgressStatus) : Future[Unit]
 
   def removeProgressStatuses(applicationId: String, progressStatuses: List[ProgressStatuses.ProgressStatus]) : Future[Unit]
+
+  def pendingFastPassApplication(frameworkId: String): Future[List[FastPassCertificateInfo]]
+
+  def countPendingFastPassApplication(frameworkId: String): Future[Int]
 }
 
 // scalastyle:off number.of.methods
@@ -132,6 +136,8 @@ class GeneralApplicationMongoRepository(timeZoneService: TimeZoneService)(implic
   extends ReactiveRepository[CreateApplicationRequest, BSONObjectID]("application", mongo,
     Commands.Implicits.createApplicationRequestFormats,
     ReactiveMongoFormats.objectIdFormats) with GeneralApplicationRepository with RandomSelection with CommonBSONDocuments {
+
+  import GeneralApplicationMongoRepository._
 
   override def create(userId: String, frameworkId: String): Future[ApplicationResponse] = {
     val applicationId = UUID.randomUUID().toString
@@ -1021,6 +1027,21 @@ class GeneralApplicationMongoRepository(timeZoneService: TimeZoneService)(implic
     .map { _ => () }
   }
 
+  override def pendingFastPassApplication(frameworkId: String): Future[List[FastPassCertificateInfo]] = {
+    collection.find(pendingFastPassApplicationQuery(frameworkId), PendingFastPassApplicationProjection)
+      .cursor[BSONDocument]().collect[List]() map {
+      _.map(doc => bsonDocToFastPassCertificateInfo(doc))
+    }
+  }
+
+  override def countPendingFastPassApplication(frameworkId: String): Future[Int] = {
+    collection.runCommand(JSONCountCommand.Count(pendingFastPassApplicationQuery(frameworkId))).map(_.count)
+  }
+
+}
+
+object GeneralApplicationMongoRepository {
+
   private def resultToBSON(schemeName: String, result: Option[EvaluationResults.Result]): BSONDocument = result match {
     case Some(r) => BSONDocument(schemeName -> r.toString)
     case _ => BSONDocument.empty
@@ -1064,5 +1085,37 @@ class GeneralApplicationMongoRepository(timeZoneService: TimeZoneService)(implic
     val personalDetailsRoot = doc.getAs[BSONDocument]("personal-details").get
     val preferredName = personalDetailsRoot.getAs[String]("preferredName").get
     ApplicationForNotification(applicationId, userId, preferredName, applicationStatus)
+  }
+
+  private def bsonDocToFastPassCertificateInfo(doc: BSONDocument): FastPassCertificateInfo = {
+    val userId = doc.getAs[String]("userId").get
+    val applicationId = doc.getAs[String]("applicationId").get
+    val personalDetails = doc.getAs[BSONDocument]("personal-details").get
+    val firstName = personalDetails.getAs[String]("firstName").get
+    val lastName = personalDetails.getAs[String]("lastName").get
+    val preferredName = personalDetails.getAs[String]("preferredName").get
+    val civilServiceExperienceDetails = doc.getAs[BSONDocument]("civil-service-experience-details").get
+    val certificateNumber = civilServiceExperienceDetails.getAs[String]("certificateNumber").get
+    val progressStatusDates = doc.getAs[BSONDocument]("progress-status-dates").get
+    val submissionDate = progressStatusDates.getAs[LocalDate]("submitted").get
+    FastPassCertificateInfo(userId, applicationId, firstName, lastName, preferredName, certificateNumber, submissionDate)
+  }
+
+  private val PendingFastPassApplicationProjection = BSONDocument(
+    "applicationId" -> "1",
+    "userId" -> "1",
+    "personal-details" -> 1,
+    "progress-status-dates" -> 1,
+    "civil-service-experience-details" -> 1
+  )
+
+  private def pendingFastPassApplicationQuery(frameworkId: String): BSONDocument = {
+    BSONDocument("$and" -> BSONArray(
+      BSONDocument("frameworkId" -> frameworkId),
+      BSONDocument("applicationStatus" -> ApplicationStatus.SUBMITTED),
+      BSONDocument("civil-service-experience-details.fastPassReceived" -> true),
+      BSONDocument("civil-service-experience-details.fastPassAccepted" -> BSONDocument("$ne" -> true)),
+      BSONDocument("civil-service-experience-details.fastPassAccepted" -> BSONDocument("$ne" -> false))
+    ))
   }
 }

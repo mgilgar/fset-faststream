@@ -80,6 +80,11 @@ package object repositories {
     applicationRepository.collection.indexesManager.create(Index(Seq(("applicationId", Ascending), ("userId", Ascending)), unique = true)),
     applicationRepository.collection.indexesManager.create(Index(Seq(("userId", Ascending), ("frameworkId", Ascending)), unique = true)),
     applicationRepository.collection.indexesManager.create(Index(Seq(("applicationStatus", Ascending)), unique = false)),
+    /*applicationRepository.collection.indexesManager.create(Index(Seq(
+      ("frameworkId", Ascending),
+      ("applicationStatus", Ascending),
+      ("civil-service-experience-details.fastPassReceived", Ascending),
+      ("civil-service-experience-details.fastPassAccepted", Ascending)), unique = false)),*/
 
     contactDetailsRepository.collection.indexesManager.create(Index(Seq(("userId", Ascending)), unique = true)),
     faststreamContactDetailsRepository.collection.indexesManager.create(Index(Seq(("userId", Ascending)), unique = true)),
