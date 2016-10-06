@@ -102,10 +102,10 @@ object OnlineTestExtensionServiceImpl {
 
     val today = DateTime.now()
     val progressList = (Set.empty[ProgressStatus]
-        ++ cond(progress.phase1TestsExpired, PHASE1_TESTS_EXPIRED)
-        ++ cond(profile.hasNotStartedYet, PHASE1_TESTS_STARTED)
-        ++ cond(extendedExpiryDate.minusHours(SecondReminder.hoursBeforeReminder).isAfter(today), PHASE1_TESTS_SECOND_REMINDER)
-        ++ cond(extendedExpiryDate.minusHours(FirstReminder.hoursBeforeReminder).isAfter(today), PHASE1_TESTS_FIRST_REMINDER)).toList
+        ++ cond(progress.phase1TestsExpired, Phase1Tests.EXPIRED)
+        ++ cond(profile.hasNotStartedYet, Phase1Tests.STARTED)
+        ++ cond(extendedExpiryDate.minusHours(SecondReminder.hoursBeforeReminder).isAfter(today), Phase1Tests.SECOND_REMINDER)
+        ++ cond(extendedExpiryDate.minusHours(FirstReminder.hoursBeforeReminder).isAfter(today), Phase1Tests.FIRST_REMINDER)).toList
     if(progressList.isEmpty) { None } else { Some(progressList) }
   }
 

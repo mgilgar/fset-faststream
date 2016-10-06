@@ -25,7 +25,7 @@ import model._
 import model.Exceptions.ConnectorException
 import model.OnlineTestCommands._
 import model.PersistedObjects.ContactDetails
-import model.ProgressStatuses.ProgressStatus
+import model.ProgressStatuses.{ ProgressStatus, Phase1Tests }
 import model.events.EventTypes.{ toString => _, _ }
 import model.exchange.Phase1TestResultReady
 import model.persisted.{ CubiksTest, Phase1TestProfile, Phase1TestProfileWithAppId }
@@ -382,11 +382,11 @@ class OnlineTestServiceSpec extends PlaySpec with BeforeAndAfterEach with Mockit
     "change progress to started" in new OnlineTest {
       when(otRepositoryMock.insertOrUpdateTestGroup(any[String], any[Phase1TestProfile])).thenReturn(Future.successful(()))
       when(otRepositoryMock.getTestProfileByCubiksId(cubiksUserId))
-        .thenReturn(Future.successful(Phase1TestProfileWithAppId("appId123", phase1TestProfile)))
-      when(otRepositoryMock.updateProgressStatus("appId123", ProgressStatuses.PHASE1_TESTS_STARTED)).thenReturn(Future.successful(()))
+        .thenReturn(Future.successful(otRepositoryMock.PhaseTestProfileWithAppId("appId123", phase1TestProfile)))
+      when(otRepositoryMock.updateProgressStatus("appId123", ProgressStatuses.Phase1Tests.STARTED)).thenReturn(Future.successful(()))
       onlineTestService.markAsStarted(cubiksUserId).futureValue
 
-      verify(otRepositoryMock).updateProgressStatus("appId123", ProgressStatuses.PHASE1_TESTS_STARTED)
+      verify(otRepositoryMock).updateProgressStatus("appId123", ProgressStatuses.Phase1Tests.STARTED)
     }
   }
 
@@ -395,11 +395,11 @@ class OnlineTestServiceSpec extends PlaySpec with BeforeAndAfterEach with Mockit
       when(otRepositoryMock.insertOrUpdateTestGroup(any[String], any[Phase1TestProfile])).thenReturn(Future.successful(()))
       val phase1Tests = phase1TestProfile.copy(tests = phase1TestProfile.tests.map(t => t.copy(completedDateTime = Some(DateTime.now()))))
       when(otRepositoryMock.getTestProfileByCubiksId(cubiksUserId))
-        .thenReturn(Future.successful(Phase1TestProfileWithAppId("appId123", phase1Tests)))
-      when(otRepositoryMock.updateProgressStatus("appId123", ProgressStatuses.PHASE1_TESTS_COMPLETED)).thenReturn(Future.successful(()))
+        .thenReturn(Future.successful(otRepositoryMock.PhaseTestProfileWithAppId("appId123", phase1Tests)))
+      when(otRepositoryMock.updateProgressStatus("appId123", ProgressStatuses.Phase1Tests.COMPLETED)).thenReturn(Future.successful(()))
       onlineTestService.markAsCompleted(cubiksUserId).futureValue
 
-      verify(otRepositoryMock).updateProgressStatus("appId123", ProgressStatuses.PHASE1_TESTS_COMPLETED)
+      verify(otRepositoryMock).updateProgressStatus("appId123", ProgressStatuses.Phase1Tests.COMPLETED)
     }
   }
 
@@ -408,7 +408,7 @@ class OnlineTestServiceSpec extends PlaySpec with BeforeAndAfterEach with Mockit
       val reportReady = Phase1TestResultReady(reportId = Some(1), reportStatus = "Ready", reportLinkURL = Some("www.report.com"))
 
       when(otRepositoryMock.getTestProfileByCubiksId(cubiksUserId)).thenReturn(
-        Future.successful(Phase1TestProfileWithAppId("appId", phase1TestProfile.copy(
+        Future.successful(otRepositoryMock.PhaseTestProfileWithAppId("appId", phase1TestProfile.copy(
           tests = List(phase1Test.copy(usedForResults = false, cubiksUserId = 123),
             phase1Test,
             phase1TestBq.copy(cubiksUserId = 789, resultsReadyToDownload = false)
@@ -429,7 +429,7 @@ class OnlineTestServiceSpec extends PlaySpec with BeforeAndAfterEach with Mockit
       val reportReady = Phase1TestResultReady(reportId = Some(1), reportStatus = "Ready", reportLinkURL = Some("www.report.com"))
 
       when(otRepositoryMock.getTestProfileByCubiksId(cubiksUserId)).thenReturn(
-        Future.successful(Phase1TestProfileWithAppId("appId", phase1TestProfile.copy(
+        Future.successful(otRepositoryMock.PhaseTestProfileWithAppId("appId", phase1TestProfile.copy(
           tests = List(phase1Test.copy(usedForResults = false, cubiksUserId = 123),
             phase1Test,
             phase1TestBq.copy(cubiksUserId = 789, resultsReadyToDownload = true)
@@ -443,7 +443,7 @@ class OnlineTestServiceSpec extends PlaySpec with BeforeAndAfterEach with Mockit
 
       val result = onlineTestService.markAsReportReadyToDownload(cubiksUserId, reportReady).futureValue
 
-      verify(otRepositoryMock).updateProgressStatus("appId", ProgressStatuses.PHASE1_TESTS_RESULTS_READY)
+      verify(otRepositoryMock).updateProgressStatus("appId", ProgressStatuses.Phase1Tests.RESULTS_READY)
     }
   }
 
@@ -461,7 +461,7 @@ class OnlineTestServiceSpec extends PlaySpec with BeforeAndAfterEach with Mockit
 
       verify(otRepositoryMock).removeTestProfileProgresses(
         "appId",
-        List(PHASE1_TESTS_STARTED, PHASE1_TESTS_COMPLETED, PHASE1_TESTS_RESULTS_RECEIVED))
+        List(Phase1Tests.STARTED, Phase1Tests.COMPLETED, Phase1Tests.RESULTS_RECEIVED))
       val expectedTestsAfterReset = List(phase1TestProfileWithStartedTests.tests.head.copy(usedForResults = false),
         phase1Test.copy(participantScheduleId = invitation.participantScheduleId))
       verify(otRepositoryMock).insertOrUpdateTestGroup(
@@ -473,7 +473,7 @@ class OnlineTestServiceSpec extends PlaySpec with BeforeAndAfterEach with Mockit
 
   "retrieve phase 1 test report" should {
     "return an exception if no report Id is set" in new OnlineTest {
-        an[Exception] must be thrownBy onlineTestService.retrieveTestResult(Phase1TestProfileWithAppId(
+        an[Exception] must be thrownBy onlineTestService.retrieveTestResult(onlineTestService.phase1TestRepo.PhaseTestProfileWithAppId(
           "appId", phase1TestProfile
         ))
     }
@@ -494,7 +494,7 @@ class OnlineTestServiceSpec extends PlaySpec with BeforeAndAfterEach with Mockit
       when(cubiksGatewayClientMock.downloadXmlReport(eqTo(failedTest.reportId.get))(any[HeaderCarrier]))
         .thenReturn(Future.failed(new Exception))
 
-      val result = onlineTestService.retrieveTestResult(Phase1TestProfileWithAppId(
+      val result = onlineTestService.retrieveTestResult(onlineTestService.phase1TestRepo.PhaseTestProfileWithAppId(
         "appId", phase1TestProfile.copy(tests = List(successfulTest, failedTest))
       ))
     }
@@ -509,12 +509,12 @@ class OnlineTestServiceSpec extends PlaySpec with BeforeAndAfterEach with Mockit
           sten = Some(1.333d)
         )))
 
-      when(otRepositoryMock.insertPhase1TestResult(any[String], any[CubiksTest], any[persisted.TestResult]))
+      when(otRepositoryMock.insertTestResult(any[String], any[CubiksTest], any[persisted.TestResult]))
         .thenReturn(Future.successful(()))
       when(otRepositoryMock.updateProgressStatus(any[String], any[ProgressStatus]))
         .thenReturn(Future.successful(()))
 
-      val result = onlineTestService.retrieveTestResult(Phase1TestProfileWithAppId(
+      val result = onlineTestService.retrieveTestResult(onlineTestService.phase1TestRepo.PhaseTestProfileWithAppId(
         "appId", phase1TestProfile.copy(tests = List(phase1Test.copy(reportId = Some(123))))
       )).futureValue
 

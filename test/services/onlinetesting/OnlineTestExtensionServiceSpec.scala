@@ -18,7 +18,7 @@ package services.onlinetesting
 
 import factories.DateTimeFactory
 import model.persisted.Phase1TestProfile
-import model.ProgressStatuses.{ PHASE1_TESTS_EXPIRED, PHASE1_TESTS_FIRST_REMINDER, PHASE1_TESTS_SECOND_REMINDER, PHASE1_TESTS_STARTED }
+import model.ProgressStatuses.Phase1Tests
 import model.command.ProgressResponse
 import org.joda.time.DateTime
 import org.mockito.Matchers.{ eq => eqTo, _ }
@@ -151,12 +151,12 @@ class OnlineTestExtensionServiceSpec extends PlaySpec with ScalaFutures with Moc
     val applicationId = "abc"
     val twoExtraDays = 2
     val threeExtraDays = 3
-    val statusToRemoveWhenNotStartedAndFirstReminderSent = List(PHASE1_TESTS_STARTED, PHASE1_TESTS_FIRST_REMINDER)
-    val statusToRemoveWhenExpiryInMoreThanOneDayExpired = List(PHASE1_TESTS_EXPIRED, PHASE1_TESTS_SECOND_REMINDER)
-    val statusToRemoveWhenExpiryInMoreThanThreeDays = List(PHASE1_TESTS_SECOND_REMINDER, PHASE1_TESTS_FIRST_REMINDER)
-    val statusToRemoveWhenExpiryInMoreThanOneDay = List(PHASE1_TESTS_SECOND_REMINDER)
+    val statusToRemoveWhenNotStartedAndFirstReminderSent = List(Phase1Tests.STARTED, Phase1Tests.FIRST_REMINDER)
+    val statusToRemoveWhenExpiryInMoreThanOneDayExpired = List(Phase1Tests.EXPIRED, Phase1Tests.SECOND_REMINDER)
+    val statusToRemoveWhenExpiryInMoreThanThreeDays = List(Phase1Tests.SECOND_REMINDER, Phase1Tests.FIRST_REMINDER)
+    val statusToRemoveWhenExpiryInMoreThanOneDay = List(Phase1Tests.SECOND_REMINDER)
     val statusToRemoveWhenExpiryInMoreThanThreeDaysExpiredNotStarted = List(
-      PHASE1_TESTS_EXPIRED, PHASE1_TESTS_STARTED, PHASE1_TESTS_SECOND_REMINDER, PHASE1_TESTS_FIRST_REMINDER)
+      Phase1Tests.EXPIRED, Phase1Tests.STARTED, Phase1Tests.SECOND_REMINDER, Phase1Tests.FIRST_REMINDER)
     val invalidStatusError = new TestExtensionException("Application is in an invalid status for test extension")
     val noTestProfileFoundError = TestExtensionException("No Phase1TestGroupAvailable for the given application")
     val genericError = new Exception("Dummy error!")

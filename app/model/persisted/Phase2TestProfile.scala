@@ -26,6 +26,5 @@ case class Phase2TestProfile(expirationDate: DateTime,
 
 object Phase2TestProfile {
   import repositories.BSONDateTimeHandler
-  implicit val bsonHandler: BSONHandler[BSONDocument, Phase2TestProfile] = Macros.handler[Phase2TestProfile]
   implicit val phase2TestProfileFormat = Json.format[Phase2TestProfile]
 }

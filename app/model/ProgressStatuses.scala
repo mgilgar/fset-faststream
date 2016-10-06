@@ -74,38 +74,38 @@ object ProgressStatuses {
     }
   }
 
-  case object PHASE1_TESTS_INVITED extends ProgressStatus(ApplicationStatus.PHASE1_TESTS)
-  case object PHASE1_TESTS_STARTED extends ProgressStatus(ApplicationStatus.PHASE1_TESTS)
-  case object PHASE1_TESTS_FIRST_REMINDER extends ProgressStatus(ApplicationStatus.PHASE1_TESTS)
-  case object PHASE1_TESTS_SECOND_REMINDER extends ProgressStatus(ApplicationStatus.PHASE1_TESTS)
-  case object PHASE1_TESTS_COMPLETED extends ProgressStatus(ApplicationStatus.PHASE1_TESTS)
-  case object PHASE1_TESTS_EXPIRED extends ProgressStatus(ApplicationStatus.PHASE1_TESTS)
-  case object PHASE1_TESTS_RESULTS_READY extends ProgressStatus(ApplicationStatus.PHASE1_TESTS)
-  case object PHASE1_TESTS_RESULTS_RECEIVED extends ProgressStatus(ApplicationStatus.PHASE1_TESTS)
+  trait TestProgress {
 
-  case object PHASE2_TESTS_INVITED extends ProgressStatus(ApplicationStatus.PHASE2_TESTS)
-  case object PHASE2_TESTS_STARTED extends ProgressStatus(ApplicationStatus.PHASE2_TESTS)
-  case object PHASE2_TESTS_FIRST_REMINDER extends ProgressStatus(ApplicationStatus.PHASE2_TESTS)
-  case object PHASE2_TESTS_SECOND_REMINDER extends ProgressStatus(ApplicationStatus.PHASE2_TESTS)
-  case object PHASE2_TESTS_COMPLETED extends ProgressStatus(ApplicationStatus.PHASE2_TESTS)
-  case object PHASE2_TESTS_EXPIRED extends ProgressStatus(ApplicationStatus.PHASE2_TESTS)
-  case object PHASE2_TESTS_RESULTS_READY extends ProgressStatus(ApplicationStatus.PHASE2_TESTS)
-  case object PHASE2_TESTS_RESULTS_RECEIVED extends ProgressStatus(ApplicationStatus.PHASE2_TESTS)
+    val applicationStatus: ApplicationStatus
 
-  val nameToProgressStatus: Map[String, ProgressStatus] = List(
-    PHASE1_TESTS_INVITED,
-    PHASE1_TESTS_STARTED,
-    PHASE1_TESTS_COMPLETED,
-    PHASE1_TESTS_EXPIRED,
-    PHASE1_TESTS_RESULTS_READY,
-    PHASE1_TESTS_RESULTS_RECEIVED,
-    PHASE2_TESTS_INVITED,
-    PHASE2_TESTS_STARTED,
-    PHASE2_TESTS_COMPLETED,
-    PHASE2_TESTS_EXPIRED,
-    PHASE2_TESTS_RESULTS_READY,
-    PHASE2_TESTS_RESULTS_RECEIVED
-  ).map { value =>
+    case object INVITED extends ProgressStatus(applicationStatus)
+
+    case object STARTED extends ProgressStatus(applicationStatus)
+
+    case object FIRST_REMINDER extends ProgressStatus(applicationStatus)
+
+    case object SECOND_REMINDER extends ProgressStatus(applicationStatus)
+
+    case object COMPLETED extends ProgressStatus(applicationStatus)
+
+    case object EXPIRED extends ProgressStatus(applicationStatus)
+
+    case object RESULTS_READY extends ProgressStatus(applicationStatus)
+
+    case object RESULTS_RECEIVED extends ProgressStatus(applicationStatus)
+
+  }
+
+  case object Phase1Tests extends TestProgress {
+    val applicationStatus = ApplicationStatus.PHASE1_TESTS
+  }
+  case object Phase2Tests extends TestProgress {
+    val applicationStatus = ApplicationStatus.PHASE2_TESTS
+  }
+
+  val nameToProgressStatus: Map[String, ProgressStatus] = List(Phase1Tests, Phase2Tests).flatMap { r =>
+    Seq(r.INVITED, r.STARTED, r.FIRST_REMINDER, r.SECOND_REMINDER, r.COMPLETED, r.EXPIRED, r.RESULTS_READY, r.RESULTS_RECEIVED)
+  }.map { value =>
     value.toString -> value
   }.toMap
 

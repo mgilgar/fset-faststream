@@ -16,20 +16,20 @@
 
 package model
 
-import model.ProgressStatuses.{ PHASE1_TESTS_FIRST_REMINDER, PHASE1_TESTS_SECOND_REMINDER, ProgressStatus }
+import model.ProgressStatuses.{ Phase1Tests, ProgressStatus }
 
 import scala.concurrent.duration.{ DAYS, HOURS, TimeUnit }
 
 sealed case class ReminderNotice(hoursBeforeReminder: Int, progressStatuses: ProgressStatus) {
   require(hoursBeforeReminder > 0, "Hours before reminder was negative")
-  require(progressStatuses == PHASE1_TESTS_FIRST_REMINDER || progressStatuses == PHASE1_TESTS_SECOND_REMINDER,
+  require(progressStatuses == Phase1Tests.FIRST_REMINDER || progressStatuses == Phase1Tests.SECOND_REMINDER,
     "progressStatuses value not allowed")
 
   def timeUnit: TimeUnit = progressStatuses match {
-    case PHASE1_TESTS_SECOND_REMINDER => HOURS
-    case PHASE1_TESTS_FIRST_REMINDER => DAYS
+    case Phase1Tests.SECOND_REMINDER => HOURS
+    case Phase1Tests.FIRST_REMINDER => DAYS
   }
 }
 
-object FirstReminder extends ReminderNotice(72, PHASE1_TESTS_FIRST_REMINDER)
-object SecondReminder extends ReminderNotice(24, PHASE1_TESTS_SECOND_REMINDER)
+object FirstReminder extends ReminderNotice(72, Phase1Tests.FIRST_REMINDER)
+object SecondReminder extends ReminderNotice(24, Phase1Tests.SECOND_REMINDER)

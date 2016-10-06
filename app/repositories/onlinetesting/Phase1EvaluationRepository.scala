@@ -42,11 +42,11 @@ class Phase1EvaluationMongoRepository()(implicit mongo: () => DB)
     val query = BSONDocument("$or" -> BSONArray(
       BSONDocument("$and" -> BSONArray(
         BSONDocument("applicationStatus" -> ApplicationStatus.PHASE1_TESTS),
-        BSONDocument(s"progress-status.${ProgressStatuses.PHASE1_TESTS_RESULTS_RECEIVED}" -> true)
+        BSONDocument(s"progress-status.${ProgressStatuses.Phase1Tests.RESULTS_RECEIVED}" -> true)
       )),
       BSONDocument("$and" -> BSONArray(
         BSONDocument("applicationStatus" -> ApplicationStatus.PHASE2_TESTS),
-        BSONDocument(s"progress-status.${ProgressStatuses.PHASE1_TESTS_RESULTS_RECEIVED}" -> true)
+        BSONDocument(s"progress-status.${ProgressStatuses.Phase1Tests.RESULTS_RECEIVED}" -> true)
       ))
     ))
 

@@ -49,16 +49,16 @@ object StatusGeneratorFactory {
         case ApplicationStatuses.Withdrawn => WithdrawnStatusGenerator
       }
       // TODO: Once all old string application statuses are removed convert this to a typed match
-      case ("PHASE1_TESTS", Some(PHASE1_TESTS_INVITED)) => Phase1TestsInvitedStatusGenerator
-      case ("PHASE1_TESTS", Some(PHASE1_TESTS_STARTED)) => Phase1TestsStartedStatusGenerator
-      case ("PHASE1_TESTS", Some(PHASE1_TESTS_EXPIRED)) =>
+      case ("PHASE1_TESTS", Some(Phase1Tests.INVITED)) => Phase1TestsInvitedStatusGenerator
+      case ("PHASE1_TESTS", Some(Phase1Tests.STARTED)) => Phase1TestsStartedStatusGenerator
+      case ("PHASE1_TESTS", Some(Phase1Tests.EXPIRED)) =>
         if (generatorConfig.phase1StartTime.isDefined) {
           Phase1TestsExpiredFromStartedStatusGenerator
         } else {
           Phase1TestsExpiredFromInvitedStatusGenerator
         }
-      case ("PHASE1_TESTS", Some(PHASE1_TESTS_COMPLETED)) => Phase1TestsCompletedStatusGenerator
-      case ("PHASE1_TESTS", Some(PHASE1_TESTS_RESULTS_RECEIVED)) => Phase1TestsResultsReceivedStatusGenerator
+      case ("PHASE1_TESTS", Some(Phase1Tests.COMPLETED)) => Phase1TestsCompletedStatusGenerator
+      case ("PHASE1_TESTS", Some(Phase1Tests.RESULTS_RECEIVED)) => Phase1TestsResultsReceivedStatusGenerator
       case _ => throw InvalidStatusException(s"$applicationStatus is not valid or not supported")
     }
   }

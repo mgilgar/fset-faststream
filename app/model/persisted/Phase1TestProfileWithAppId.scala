@@ -16,16 +16,6 @@
 
 package model.persisted
 
-import reactivemongo.bson.Macros
-
 case class Phase1TestProfileWithAppId(applicationId: String, phase1TestProfile: Phase1TestProfile)
 
-object Phase1TestProfileWithAppId {
-  implicit val phase1TestProfileWithAppIdHandler = Macros.handler[Phase1TestProfileWithAppId]
-}
-
 case class Phase2TestProfileWithAppId(applicationId: String, phase2TestProfile: Phase2TestProfile)
-
-object Phase2TestProfileWithAppId {
-  implicit val phase1TestProfileWithAppIdHandler = Macros.handler[Phase2TestProfileWithAppId]
-}

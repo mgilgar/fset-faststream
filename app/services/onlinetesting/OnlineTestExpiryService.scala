@@ -17,8 +17,8 @@
 package services.onlinetesting
 
 import connectors.{ CSREmailClient, EmailClient }
+import model.ProgressStatuses.Phase1Tests
 import model.persisted.{ ExpiringOnlineTest, NotificationExpiringOnlineTest }
-import model.ProgressStatuses.{ PHASE1_TESTS_EXPIRED, PHASE1_TESTS_FIRST_REMINDER, PHASE1_TESTS_SECOND_REMINDER }
 import model.ReminderNotice
 import play.api.Logger
 import repositories._
@@ -62,7 +62,7 @@ class OnlineTestExpiryServiceImpl(
   }
 
   override def commitExpiredProgressStatus(expiringTest: ExpiringOnlineTest): Future[Unit] =
-    applicationRepository.addProgressStatusAndUpdateAppStatus(expiringTest.applicationId, PHASE1_TESTS_EXPIRED).map { _ =>
+    applicationRepository.addProgressStatusAndUpdateAppStatus(expiringTest.applicationId, Phase1Tests.EXPIRED).map { _ =>
       audit("ExpiredOnlineTest", expiringTest)
     }
 
@@ -100,9 +100,9 @@ class OnlineTestExpiryServiceImpl(
 
     applicationRepository.addProgressStatusAndUpdateAppStatus(expiringTest.applicationId, reminder.progressStatuses).map { _ =>
       reminder.progressStatuses match {
-        case PHASE1_TESTS_FIRST_REMINDER => audit(s"FirstReminderFor${reminder.hoursBeforeReminder}HoursAddedToProgress",
+        case Phase1Tests.FIRST_REMINDER => audit(s"FirstReminderFor${reminder.hoursBeforeReminder}HoursAddedToProgress",
           ExpiringOnlineTest(expiringTest.applicationId, expiringTest.userId, expiringTest.preferredName))
-        case PHASE1_TESTS_SECOND_REMINDER => audit(s"SecondReminderFor${reminder.hoursBeforeReminder}HoursAddedToProgress",
+        case Phase1Tests.SECOND_REMINDER => audit(s"SecondReminderFor${reminder.hoursBeforeReminder}HoursAddedToProgress",
           ExpiringOnlineTest(expiringTest.applicationId, expiringTest.userId, expiringTest.preferredName))
       }
     }
