@@ -40,6 +40,13 @@ trait LaunchpadTestsController extends BaseController {
   val phase3TestService: Phase3TestService
   val eventService: EventService
 
+  def viewBrandedVideoCallback(inviteId: String) = Action.async(parse.json) { implicit request =>
+    withJsonBody[ViewBrandedVideoCallbackRequest] { jsonBody =>
+      Logger.warn("Received view branded video callback request -> " + jsonBody)
+      Future.successful(Ok)
+    }
+  }
+
   def setupProcessCallback(inviteId: String) = Action.async(parse.json) { implicit request =>
     withJsonBody[SetupProcessCallbackRequest] { jsonBody =>
       Logger.warn("Received setup process callback request -> " + jsonBody)
@@ -67,6 +74,7 @@ trait LaunchpadTestsController extends BaseController {
       Future.successful(Ok)
     }
   }
+  
   def finishedCallback(inviteId: String) = Action.async(parse.json) { implicit request =>
     withJsonBody[FinishedCallbackRequest] { jsonBody =>
       Logger.warn("Received finished callback request -> " + jsonBody)

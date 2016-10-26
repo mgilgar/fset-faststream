@@ -19,9 +19,9 @@ package connectors.launchpadgateway.exchangeobjects.in
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
 
-case class SetupProcessCallbackRequest(candidateId: String, customCandidateId: String, interviewId: Int,
-  customInterviewId: Option[String], customInviteId: String, deadline: LocalDate)
+case class ViewBrandedVideoCallbackRequest(candidateId: String, customCandidateId: String, interviewId: Int,
+                                           customInterviewId: Option[String], customInviteId: String, deadline: LocalDate)
 
-object SetupProcessCallbackRequest {
-  implicit val setupProcessCallbackRequestFormat = Json.format[SetupProcessCallbackRequest]
+object ViewBrandedVideoCallbackRequest {
+  implicit val viewBrandedVideoCallbackRequestFormat = Json.format[ViewBrandedVideoCallbackRequest]
 }
