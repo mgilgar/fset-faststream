@@ -17,22 +17,24 @@
 package services.onlinetesting
 
 import _root_.services.AuditService
+import common.FutureEx
 import config.LaunchpadGatewayConfig
 import connectors._
 import connectors.launchpadgateway.LaunchpadGatewayClient
 import connectors.launchpadgateway.exchangeobjects._
-import connectors.launchpadgateway.exchangeobjects.out.{InviteApplicantRequest, InviteApplicantResponse, RegisterApplicantRequest}
-import factories.{DateTimeFactory, UUIDFactory}
+import connectors.launchpadgateway.exchangeobjects.out.{ InviteApplicantRequest, InviteApplicantResponse, RegisterApplicantRequest }
+import factories.{ DateTimeFactory, UUIDFactory }
 import model.OnlineTestCommands._
 import model.persisted.NotificationExpiringOnlineTest
-import model.persisted.phase3tests.{LaunchpadTest, Phase3TestGroup}
-import model.{ProgressStatuses, ReminderNotice, TestExpirationEvent}
+import model.persisted.phase3tests.{ LaunchpadTest, Phase3TestGroup }
+import model.{ ProgressStatuses, ReminderNotice, TestExpirationEvent }
 import org.joda.time.DateTime
+import play.api.Logger
 import play.api.mvc.RequestHeader
 import repositories._
 import repositories.application.GeneralApplicationRepository
 import repositories.onlinetesting.Phase3TestRepository
-import services.events.{EventService, EventSink}
+import services.events.{ EventService, EventSink }
 import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -70,8 +72,12 @@ trait Phase3TestService extends OnlineTestService with ResetPhase3Test with Even
 
   def getTestGroup(applicationId: String): Future[Option[Phase3TestGroup]] = phase3TestRepo.getTestGroup(applicationId)
 
-  override def registerAndInviteForTestGroup(application: List[OnlineTestApplication])
-    (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = Future.failed(new NotImplementedError())
+  override def registerAndInviteForTestGroup(applications: List[OnlineTestApplication])
+                                            (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
+    Future.traverse(applications)(application =>
+      registerAndInviteForTestGroup(application))
+    Future.successful(())
+  }
 
   override def registerAndInviteForTestGroup(application: OnlineTestApplication)
     (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
@@ -140,6 +146,9 @@ trait Phase3TestService extends OnlineTestService with ResetPhase3Test with Even
       s"phase3-tests/complete/$customInviteId"
 
     val inviteApplicant = InviteApplicantRequest(interviewId, candidateId, customInviteId, completionRedirectUrl)
+
+    Logger.debug("========== Inviting applicant " + application.applicationId + " Cnd: " +
+      inviteApplicant.candidateId + " to " + inviteApplicant.interviewId + " inv: " + inviteApplicant.customInviteId)
 
     launchpadGatewayClient.inviteApplicant(inviteApplicant)
   }

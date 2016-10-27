@@ -74,8 +74,16 @@ trait LaunchpadTestsController extends BaseController {
       Future.successful(Ok)
     }
   }
-  
+
   def finishedCallback(inviteId: String) = Action.async(parse.json) { implicit request =>
+    withJsonBody[FinishedCallbackRequest] { jsonBody =>
+      Logger.warn("Received finished callback request -> " + jsonBody)
+      Future.successful(Ok)
+    }
+  }
+
+  // TODO
+  def reviewedCallback(inviteId: String) = Action.async(parse.json) { implicit request =>
     withJsonBody[FinishedCallbackRequest] { jsonBody =>
       Logger.warn("Received finished callback request -> " + jsonBody)
       Future.successful(Ok)

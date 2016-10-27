@@ -18,7 +18,7 @@ package services.testdata
 
 import model.ApplicationStatus._
 import model.Exceptions.InvalidStatusException
-import model.ProgressStatuses._
+import model.ProgressStatuses.{ PHASE2_TESTS_PASSED, _ }
 
 object StatusGeneratorFactory {
   // scalastyle:off cyclomatic.complexity
@@ -60,6 +60,7 @@ object StatusGeneratorFactory {
       case (PHASE1_TESTS, Some(PHASE1_TESTS_RESULTS_RECEIVED)) => Phase1TestsResultsReceivedStatusGenerator
       case (PHASE2_TESTS, Some(PHASE2_TESTS_INVITED)) => Phase2TestsInvitedStatusGenerator
       case (PHASE2_TESTS, Some(PHASE2_TESTS_STARTED)) => Phase2TestsStartedStatusGenerator
+      case (PHASE2_TESTS, Some(PHASE2_TESTS_PASSED)) => Phase2TestsPassedStatusGenerator
       case (PHASE2_TESTS, Some(PHASE2_TESTS_EXPIRED)) =>
         if (generatorConfig.phase1StartTime.isDefined) {
           Phase2TestsExpiredFromStartedStatusGenerator
