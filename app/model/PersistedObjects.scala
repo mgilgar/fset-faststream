@@ -22,10 +22,10 @@ import org.joda.time.{DateTime, LocalDate}
 import model.ApplicationStatus._
 import play.api.libs.json._
 
-@deprecated("fasttrack version. Create one case class in one file. All persisted case classes are in model.persisted package")
+@deprecated("Create one case class in one file. All persisted case classes are in model.persisted package", "fasttrack version")
 object PersistedObjects {
 
-  @deprecated("fasttrack version")
+  @deprecated("Create faststream version", "fasttrack version")
   case class PersonalDetails(
     firstName: String,
     lastName: String,

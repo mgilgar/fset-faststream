@@ -585,7 +585,7 @@ class Phase1TestServiceSpec extends PlaySpec with BeforeAndAfterEach with Mockit
   "processNextExpiredTest" should {
     "do nothing if there are no expired application to process" in new OnlineTest {
       when(otRepositoryMock.nextExpiringApplication(Phase1ExpirationEvent)).thenReturn(Future.successful(None))
-      phase1TestService.processNextExpiredTest(Phase1ExpirationEvent).futureValue mustBe ()
+      phase1TestService.processNextExpiredTest(Phase1ExpirationEvent).futureValue mustBe (())
     }
     "update progress status and send an email to the user when an application is expired" in new OnlineTest {
       when(otRepositoryMock.nextExpiringApplication(Phase1ExpirationEvent)).thenReturn(Future.successful(Some(expiredApplication)))
@@ -606,7 +606,7 @@ class Phase1TestServiceSpec extends PlaySpec with BeforeAndAfterEach with Mockit
   "processNextTestForReminder" should {
     "do nothing if there are no application to process for reminders" in new OnlineTest {
       when(otRepositoryMock.nextTestForReminder(Phase1FirstReminder)).thenReturn(Future.successful(None))
-      phase1TestService.processNextTestForReminder(Phase1FirstReminder).futureValue mustBe ()
+      phase1TestService.processNextTestForReminder(Phase1FirstReminder).futureValue mustBe (())
     }
     "update progress status and send an email to the user when an application is about to expire" in new OnlineTest {
       when(otRepositoryMock.nextTestForReminder(Phase1FirstReminder)).thenReturn(Future.successful(Some(expiryReminder)))
