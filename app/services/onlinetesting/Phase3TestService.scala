@@ -147,9 +147,6 @@ trait Phase3TestService extends OnlineTestService with ResetPhase3Test with Even
 
     val inviteApplicant = InviteApplicantRequest(interviewId, candidateId, customInviteId, completionRedirectUrl)
 
-    Logger.debug("========== Inviting applicant " + application.applicationId + " Cnd: " +
-      inviteApplicant.candidateId + " to " + inviteApplicant.interviewId + " inv: " + inviteApplicant.customInviteId)
-
     launchpadGatewayClient.inviteApplicant(inviteApplicant)
   }
 
