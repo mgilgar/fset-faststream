@@ -49,7 +49,7 @@ trait InProgressAssistanceDetailsStatusGenerator extends ConstructiveGenerator {
       _ <- adRepository.update(appId, candidateInPreviousStatus.userId, assistanceDetails)
       _ <- maybeAdjustments.map(adjustmentsManagementService.confirmAdjustment(appId, _)).getOrElse(Future.successful())
     } yield {
-      candidateInPreviousStatus.copy(assistanceDetails = Some(assistanceDetails))
+      candidateInPreviousStatus.copy(assistanceDetails = Some(assistanceDetails), adjustmentInformation = maybeAdjustments)
     }
   }
 
