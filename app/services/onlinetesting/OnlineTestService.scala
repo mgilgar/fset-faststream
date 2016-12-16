@@ -53,14 +53,13 @@ trait OnlineTestService extends TimeExtension with EventSink {
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def nextApplicationReadyForOnlineTesting: Future[List[OnlineTestApplication]]
-  def registerAndInviteForTestGroup(application: OnlineTestApplication)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit]
   def registerAndInviteForTestGroup(applications: List[OnlineTestApplication])(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit]
   def processNextExpiredTest(expiryTest: TestExpirationEvent)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit]
   def processNextTestForReminder(reminder: ReminderNotice)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit]
   def emailCandidateForExpiringTestReminder(expiringTest: NotificationExpiringOnlineTest, emailAddress: String, reminder: ReminderNotice)
                                            (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit]
   def nextTestGroupWithReportReady: Future[Option[RichTestGroup]]
-  def retrieveTestResult(testProfile: RichTestGroup)(implicit hc: HeaderCarrier): Future[Unit]
+  def retrieveTestResult(testProfile: RichTestGroup)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit]
 
   def processNextTestForNotification(notificationType: NotificationTestType)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
 

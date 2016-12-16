@@ -258,7 +258,7 @@ class OnlineTestServiceSpec extends UnitSpec {
       override def nextTestGroupWithReportReady: Future[Option[RichTestGroup]] = Future.successful(None)
 
       override def retrieveTestResult(testProfile: RichTestGroup)
-        (implicit hc: HeaderCarrier): Future[Unit] = Future.successful(())
+        (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = Future.successful(())
     }
   }
 }

@@ -122,7 +122,7 @@ class Phase3TestServiceSpec extends UnitSpec with ExtendedTimeout {
     }
 
     "call the register and invite methods of the 0% adjusted interview id when a candidate has no adjustments" in new Phase3TestServiceFixture {
-      phase3TestServiceNoTestGroup.registerAndInviteForTestGroup(onlineTestApplication).futureValue
+      phase3TestServiceNoTestGroup.registerAndInviteForTestGroup(onlineTestApplication :: Nil).futureValue
 
       verify(launchpadGatewayClientMock).registerApplicant(eqTo(
         RegisterApplicantRequest(
@@ -145,7 +145,9 @@ class Phase3TestServiceSpec extends UnitSpec with ExtendedTimeout {
     }
 
     "call the register and invite methods of the 33% interview id when a candidate has 33% time adjustments" in new Phase3TestServiceFixture {
-      phase3TestServiceNoTestGroup.registerAndInviteForTestGroup(onlineTestApplicationWithThirtyThreeTimeAdjustment).futureValue
+      phase3TestServiceNoTestGroup.registerAndInviteForTestGroup(
+        onlineTestApplicationWithThirtyThreeTimeAdjustment :: Nil
+      ).futureValue
 
       verify(launchpadGatewayClientMock).registerApplicant(eqTo(
         RegisterApplicantRequest(

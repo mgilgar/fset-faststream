@@ -38,13 +38,19 @@ object AuditEvents {
   case class ApplicationExported(seqDetails: (String, String)*) extends AuditEvent(seqDetails.toMap)
   case class ExpiredTestsExtended(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
   case class NonExpiredTestsExtended(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
-  case class Phase1TestsReset(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
   case class ApplicationExpired(mapDetails: Map[String, String]) extends AuditEvent(mapDetails)
   case class ApplicationExpiryReminder(mapDetails: Map[String, String]) extends AuditEvent(mapDetails)
   case class ExpiredTestEmailSent(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
   case class FailedTestEmailSent(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
   case class SuccessTestEmailSent(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
 
+  case class Phase1TestsRegistered(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
+  case class Phase1TestsInvited(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
+  case class Phase1TestsRegisterAndInviteComplete(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
+  case class Phase1TestsReset(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
+
+  case class Phase2TestsRegistered(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
+  case class Phase2TestsInvited(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
   case class Phase2TestsReset(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
   case class Phase2TestInvitationProcessComplete(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
 

@@ -16,7 +16,7 @@
 
 package services.onlinetesting
 
-import _root_.services.AuditService
+import services.AuditService
 import akka.actor.ActorSystem
 import common.Phase2TestConcern
 import config.{ CubiksGatewayConfig, Phase2Schedule, Phase2TestsConfig }
@@ -35,7 +35,6 @@ import model.{ ApplicationStatus, _ }
 import org.joda.time.DateTime
 import play.api.mvc.RequestHeader
 import repositories._
-import repositories.application.GeneralApplicationRepository
 import repositories.onlinetesting.Phase2TestRepository
 import services.events.EventService
 import services.onlinetesting.ResetPhase2Test._
@@ -185,11 +184,6 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
       }
   }
 
-  override def registerAndInviteForTestGroup(application: OnlineTestApplication)
-                                            (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
-    registerAndInviteForTestGroup(List(application))
-  }
-
   override def processNextExpiredTest(expiryTest: TestExpirationEvent)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
     phase2TestRepo.nextExpiringApplication(expiryTest).flatMap {
       case Some(expired) => processExpiredTest(expired, expiryTest)
@@ -198,17 +192,17 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
   }
 
   def registerApplicants(candidates: List[OnlineTestApplication], tokens: Seq[String])
-                        (implicit hc: HeaderCarrier): Future[Map[Int, (OnlineTestApplication, String, Registration)]] = {
+    (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Map[Int, (OnlineTestApplication, String, Registration)]] = {
     cubiksGatewayClient.registerApplicants(candidates.size).map(_.zipWithIndex.map { case (registration, idx) =>
       val candidate = candidates(idx)
-      audit("Phase2TestRegistered", candidate.userId)
+      eventSink { AuditEvents.Phase2TestsRegistered(Map("userId" -> candidate.userId)) :: Nil }
       (registration.userId, (candidate, tokens(idx), registration))
     }.toMap)
   }
 
   def inviteApplicants(candidateData: Map[Int, (OnlineTestApplication, String, Registration)],
                       schedule: Phase2Schedule)
-                      (implicit hc: HeaderCarrier): Future[List[Phase2TestInviteData]] = {
+    (implicit hc: HeaderCarrier, rh: RequestHeader): Future[List[Phase2TestInviteData]] = {
     val invites = candidateData.values.map { case (application, token, registration) =>
       buildInviteApplication(application, token, registration.userId, schedule)
     }.toList
@@ -220,7 +214,7 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
 
     cubiksGatewayClient.inviteApplicants(filteredInvites).map(_.map { invitation =>
       val (application, token, registration) = candidateData(invitation.userId)
-      audit("Phase2TestInvited", application.userId)
+      eventSink { AuditEvents.Phase2TestsInvited(Map("userId" -> application.userId)) :: Nil }
       Phase2TestInviteData(application, schedule.scheduleId, token, registration, invitation)
     })
   }
@@ -276,7 +270,7 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
   }
 
   private def registerAndInviteForTestGroup(applications: List[OnlineTestApplication], schedule: Phase2Schedule,
-                                              expiresDate: Option[DateTime] = None)
+                                            expiresDate: Option[DateTime] = None)
                                            (implicit hc: HeaderCarrier, rh: RequestHeader): Future[List[OnlineTestApplication]] = {
     require(applications.map(_.isInvigilatedETray).distinct.size <= 1, "the batch can have only one type of invigilated e-tray")
 
@@ -493,7 +487,8 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
   // It's a bit fiddly to extract up to the OnlineTestService/Repository traits without defining another common
   // CubiksTestService/Repository layer as it will be different for Launchapd.
   // Still feels wrong to leave it here when it's 99% the same as phase1.
-  def retrieveTestResult(testProfile: RichTestGroup)(implicit hc: HeaderCarrier): Future[Unit] = {
+  def retrieveTestResult(testProfile: RichTestGroup)
+    (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = eventSink {
 
     def insertTests(testResults: List[(OnlineTestCommands.TestResult, U)]): Future[Unit] = {
       Future.sequence(testResults.map {
@@ -510,9 +505,10 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
         val latestProfile = eventualProfile.getOrElse(throw new Exception(s"No profile returned for $appId"))
         if (latestProfile.activeTests.forall(_.testResult.isDefined)) {
           phase2TestRepo.updateProgressStatus(appId, ProgressStatuses.PHASE2_TESTS_RESULTS_RECEIVED).map(_ =>
-            audit(s"ProgressStatusSet${ProgressStatuses.PHASE2_TESTS_RESULTS_RECEIVED}", appId))
+            DataStoreEvents.ProgressStatusSet(appId, PHASE2_TESTS_RESULTS_RECEIVED) :: Nil
+          )
         } else {
-          Future.successful(())
+          Future.successful(Nil)
         }
       }
     }
@@ -526,11 +522,9 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
     for {
       eventualTestResults <- testResults
       _ <- insertTests(eventualTestResults)
-      _ <- maybeUpdateProgressStatus(testProfile.applicationId)
+      maybeEvent <- maybeUpdateProgressStatus(testProfile.applicationId)
     } yield {
-      eventualTestResults.foreach { _ =>
-        audit(s"ResultsRetrievedForSchedule", testProfile.applicationId)
-      }
+        DataStoreEvents.ETrayResultsReceived(testProfile.applicationId) :: maybeEvent
     }
   }
 }

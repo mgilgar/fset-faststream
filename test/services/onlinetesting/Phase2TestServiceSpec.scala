@@ -108,7 +108,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
       last._2 mustBe tokens.last
       last._3 mustBe registrations.last
 
-      verify(auditServiceMock, times(2)).logEventNoRequest(eqTo("Phase2TestRegistered"), any[Map[String, String]])
+      verifyAuditEvents(2, List("Phase2TestsRegistered"))
     }
   }
 
@@ -125,7 +125,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
         phase2TestService.Phase2TestInviteData(onlineTestApplication2, scheduleId = DaroSchedule.scheduleId, tokens.last,
           registrations.last, invites.last)
       )
-      verify(auditServiceMock, times(2)).logEventNoRequest(eqTo("Phase2TestInvited"), any[Map[String, String]])
+      verifyAuditEvents(2, List("Phase2TestsInvited"))
     }
   }
 
@@ -139,12 +139,10 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
       when(otRepositoryMock.insertCubiksTests(any[String], any[Phase2TestGroup])).thenReturn(Future.successful(()))
       phase2TestService.registerAndInviteForTestGroup(candidates).futureValue
 
-      verify(auditServiceMock, times(2)).logEventNoRequest(eqTo("Phase2TestRegistered"), any[Map[String, String]])
-      verify(auditServiceMock, times(2)).logEventNoRequest(eqTo("Phase2TestInvited"), any[Map[String, String]])
-      verify(phase2TestService.auditEventHandlerMock, times(2)).handle(any[Phase2TestInvitationProcessComplete])(any[HeaderCarrier],
-        any[RequestHeader])
-      verify(phase2TestService.dataStoreEventHandlerMock, times(2)).handle(any[OnlineExerciseResultSent])(any[HeaderCarrier],
-        any[RequestHeader])
+      verifyAuditEvents(4, List("Phase2TestInvited", "Phase2TestRegistered"))
+      verifyAuditEvents(2, List("Phase2TestInvitationProcessComplete"))
+      verifyDataStoreEvents(2, List("OnlineExerciseResultsSent"))
+
       verify(auditServiceMock, times(2)).logEventNoRequest(eqTo("OnlineTestInvitationEmailSent"), any[Map[String, String]])
 
       verify(otRepositoryMock, times(2)).insertCubiksTests(any[String], any[Phase2TestGroup])
@@ -165,7 +163,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
       verify(auditServiceMock).logEventNoRequest(eqTo("Phase2TestInvited"), any[Map[String, String]])
       verify(auditServiceMock).logEventNoRequest(eqTo("Phase2TestInvitationProcessComplete"), any[Map[String, String]])
       verify(otRepositoryMock).insertOrUpdateTestGroup(any[String], any[Phase2TestGroup])
-      phase2TestService.verifyDataStoreEvents(1, "OnlineExerciseResultSent")
+      verifyDataStoreEvent("OnlineExerciseResultSent")
     }
 
     "register and invite an invigilated e-tray candidate to DARO schedule" in new Phase2TestServiceFixture {
@@ -299,7 +297,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
           PHASE2_TESTS_FAILED, PHASE2_TESTS_EXPIRED, PHASE2_TESTS_PASSED, PHASE2_TESTS_FAILED_NOTIFIED))
       verify(otRepositoryMock).markTestAsInactive(cubiksUserId)
       verify(otRepositoryMock).insertCubiksTests(any[String], any[Phase2TestGroup])
-      verify(phase2TestService.dataStoreEventHandlerMock).handle(DataStoreEvents.ETrayReset("appId", "createdBy"))(hc, rh)
+      verifyDataStoreEvent("ETrayReset")
     }
 
     "remove phase 3 tests and reset phase 2 tests" in new Phase2TestServiceFixture {
@@ -343,7 +341,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
           PHASE2_TESTS_FAILED, PHASE2_TESTS_EXPIRED, PHASE2_TESTS_PASSED, PHASE2_TESTS_FAILED_NOTIFIED))
       verify(otRepositoryMock).markTestAsInactive(cubiksUserId)
       verify(otRepositoryMock).insertCubiksTests(any[String], any[Phase2TestGroup])
-      verify(phase2TestService.dataStoreEventHandlerMock).handle(DataStoreEvents.ETrayReset("appId", "createdBy"))(hc, rh)
+      verifyDataStoreEvent("ETrayReset")
     }
 
     "return cannot reset phase2 tests exception" in new Phase2TestServiceFixture {
@@ -601,7 +599,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
   private def phase2Progress(phase2ProgressResponse: Phase2ProgressResponse) =
     ProgressResponse("appId", phase2ProgressResponse = phase2ProgressResponse)
 
-  trait Phase2TestServiceFixture {
+  trait Phase2TestServiceFixture extends EventServiceFixture {
 
     implicit val hc = mock[HeaderCarrier]
     implicit val rh = mock[RequestHeader]
@@ -643,7 +641,6 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
     val emailClientMock = mock[CSREmailClient]
     val auditServiceMock = mock[AuditService]
     val tokenFactoryMock = mock[UUIDFactory]
-    val eventServiceMock = mock[EventService]
     val phase3TestServiceMock = mock[Phase3TestService]
 
     val tokens = UUIDFactory.generateUUID :: UUIDFactory.generateUUID :: Nil
@@ -755,7 +752,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
 
     when(tokenFactoryMock.generateUUID()).thenReturn(token)
 
-    val phase2TestService = new Phase2TestService with EventServiceFixture with Phase2TestSelector {
+    val phase2TestService = new Phase2TestService with Phase2TestSelector {
       val appRepository = appRepositoryMock
       val cdRepository = cdRepositoryMock
       val phase2TestRepo = otRepositoryMock

@@ -16,6 +16,7 @@
 
 package model.events
 
+import model.ProgressStatuses.ProgressStatus
 import model.events.EventTypes.EventType
 import model.persisted.Event
 import org.joda.time.DateTime
@@ -72,12 +73,14 @@ object DataStoreEvents {
   case class OnlineExerciseResultSent(appId: String) extends DataStoreEventWithAppId
   case class FailedTestEmailSent(appId: String) extends DataStoreEventWithAppId
   case class SuccessTestEmailSent(appId: String) extends DataStoreEventWithAppId
+  case class OnlineExerciseResultsReceived(appId: String) extends DataStoreEventWithAppId
 
   case class ETrayStarted(appId: String) extends DataStoreEventWithAppId
   case class ETrayCompleted(appId: String) extends DataStoreEventWithAppId
   case class ETrayExtended(appId: String, createdByUser: String) extends DataStoreEventWithCreatedBy
   case class ETrayReset(appId: String, createdByUser: String) extends DataStoreEventWithCreatedBy
   case class ETrayResultSent(appId: String) extends DataStoreEventWithAppId
+  case class ETrayResultsReceived(appId: String) extends DataStoreEventWithAppId
 
   case class VideoInterviewInvited(appId: String) extends DataStoreEventWithAppId
   case class VideoInterviewCandidateRegistered(appId: String) extends DataStoreEventWithAppId
@@ -96,6 +99,8 @@ object DataStoreEvents {
   case class FastPassRejected(appId: String, createdByUser: String) extends DataStoreEventWithCreatedBy
   case class AdjustmentsCommentUpdated(appId: String) extends DataStoreEventWithAppId
   case class AdjustmentsCommentRemoved(appId: String) extends DataStoreEventWithAppId
+
+  case class ProgressStatusSet(appId: String, newStatus: ProgressStatus) extends DataStoreEventWithAppId
   // scalastyle:on
 
 

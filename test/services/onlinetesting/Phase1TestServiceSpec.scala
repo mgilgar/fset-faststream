@@ -195,7 +195,7 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       when(otRepositoryMock.insertCubiksTests(any[String], any[Phase1TestProfile])).thenReturn(Future.successful(()))
 
       val result = phase1TestService
-        .registerAndInviteForTestGroup(onlineTestApplication.copy(guaranteedInterview = true))
+        .registerAndInviteForTestGroup(onlineTestApplication.copy(guaranteedInterview = true) :: Nil)
 
       result.futureValue mustBe unit
 
@@ -215,7 +215,7 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       when(otRepositoryMock.getTestGroup(any[String])).thenReturn(Future.successful(Some(phase1TestProfile)))
       when(otRepositoryMock.markTestAsInactive(any[Int])).thenReturn(Future.successful(()))
       when(otRepositoryMock.insertCubiksTests(any[String], any[Phase1TestProfile])).thenReturn(Future.successful(()))
-      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication)
+      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication :: Nil)
 
       result.futureValue mustBe unit
 
@@ -235,7 +235,7 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       when(cubiksGatewayClientMock.registerApplicant(any[RegisterApplicant])).
         thenReturn(Future.failed(new ConnectorException(connectorErrorMessage)))
 
-      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication)
+      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication :: Nil)
       result.failed.futureValue mustBe a[ConnectorException]
 
       verify(auditServiceMock, times(0)).logEventNoRequest(any[String], any[Map[String, String]])
@@ -248,7 +248,7 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
         Future.failed(new ConnectorException(connectorErrorMessage))
       )
 
-      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication)
+      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication :: Nil)
       result.failed.futureValue mustBe a[ConnectorException]
 
       verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineTest", auditDetails)
@@ -264,7 +264,7 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       when(cdRepositoryMock.find(userId))
         .thenReturn(Future.failed(new Exception))
 
-      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication)
+      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication :: Nil)
       result.failed.futureValue mustBe an[Exception]
 
       verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineTest", auditDetails)
@@ -286,7 +286,7 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       )(any[HeaderCarrier]))
         .thenReturn(Future.failed(new Exception))
 
-      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication)
+      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication :: Nil)
       result.failed.futureValue mustBe an[Exception]
 
       verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineTest", auditDetails)
@@ -309,7 +309,7 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       when(otRepositoryMock.insertOrUpdateTestGroup("appId", phase1TestProfile))
         .thenReturn(Future.failed(new Exception))
 
-      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication)
+      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication :: Nil)
       result.failed.futureValue mustBe an[Exception]
 
       verify(emailClientMock, times(0)).sendOnlineTestInvitation(any[String], any[String], any[DateTime])(
@@ -336,7 +336,7 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       when(otRepositoryMock.insertOrUpdateTestGroup(any[String], any[Phase1TestProfile]))
         .thenReturn(Future.successful(()))
 
-      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication)
+      val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication :: Nil)
       result.futureValue mustBe unit
 
       verify(emailClientMock, times(1)).sendOnlineTestInvitation(
