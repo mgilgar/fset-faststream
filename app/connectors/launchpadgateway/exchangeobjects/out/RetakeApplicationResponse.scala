@@ -14,25 +14,12 @@
  * limitations under the License.
  */
 
-package services.parity
+package connectors.launchpadgateway.exchangeobjects.out
 
-import org.scalatestplus.play.OneAppPerSuite
-import testkit.UnitSpec
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.json.Json
 
-class ParityExportServiceSpec extends UnitSpec with OneAppPerSuite {
+case class RetakeApplicantResponse(customInviteId: String, testUrl: String, deadline: String)
 
-  "Export Application" should {
-    "Display some things" in new TestFixture {
-      /*
-      sut.exportApplication("ddcb9d48-d93e-4c85-9f44-00d9a0d4b64c").recover {
-        case ex => print(s"There was an error => $ex\n")
-      }.futureValue
-      */
-    }
-  }
-
-  trait TestFixture {
-    //val sut = ParityExportService
-  }
+object RetakeApplicantResponse {
+  implicit val retakeApplicantResponseFormat = Json.format[RetakeApplicantResponse]
 }

@@ -14,25 +14,13 @@
  * limitations under the License.
  */
 
-package services.parity
+package connectors.launchpadgateway.exchangeobjects.out
 
-import org.scalatestplus.play.OneAppPerSuite
-import testkit.UnitSpec
-import scala.concurrent.ExecutionContext.Implicits.global
+import org.joda.time.LocalDate
+import play.api.libs.json.Json
 
-class ParityExportServiceSpec extends UnitSpec with OneAppPerSuite {
+case class RetakeApplicantRequest(interviewId: Int, candidateId: String, newDeadline: LocalDate)
 
-  "Export Application" should {
-    "Display some things" in new TestFixture {
-      /*
-      sut.exportApplication("ddcb9d48-d93e-4c85-9f44-00d9a0d4b64c").recover {
-        case ex => print(s"There was an error => $ex\n")
-      }.futureValue
-      */
-    }
-  }
-
-  trait TestFixture {
-    //val sut = ParityExportService
-  }
+object RetakeApplicantRequest {
+  implicit val retakeApplicantRequestFormat = Json.format[RetakeApplicantRequest]
 }
