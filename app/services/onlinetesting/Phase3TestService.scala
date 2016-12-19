@@ -23,7 +23,7 @@ import connectors._
 import connectors.launchpadgateway.LaunchpadGatewayClient
 import connectors.launchpadgateway.exchangeobjects.out._
 import factories.{ DateTimeFactory, UUIDFactory }
-import model.Exceptions.{ ConnectorException, NotFoundException }
+import model.Exceptions.NotFoundException
 import model.OnlineTestCommands._
 import model.ProgressStatuses._
 import model._
@@ -36,7 +36,9 @@ import model.persisted.{ NotificationExpiringOnlineTest, Phase3TestGroupWithAppI
 import org.joda.time.{ DateTime, LocalDate }
 import play.api.mvc.RequestHeader
 import repositories._
-import repositories.onlinetesting.Phase3TestRepository
+import repositories.application.GeneralApplicationMongoRepository
+import repositories.contactdetails.ContactDetailsMongoRepository
+import repositories.onlinetesting.{ Phase3TestMongoRepository, Phase3TestRepository }
 import services.events.EventService
 import services.onlinetesting.Phase2TestService.NoActiveTestException
 import services.onlinetesting.ResetPhase3Test.CannotResetPhase3Tests
@@ -50,15 +52,15 @@ object Phase3TestService extends Phase3TestService {
 
   import config.MicroserviceAppConfig._
 
-  val appRepository = applicationRepository
-  val testRepository = phase3TestRepository
-  val cdRepository = faststreamContactDetailsRepository
+  val appRepository: GeneralApplicationMongoRepository = applicationRepository
+  val testRepository: Phase3TestMongoRepository = phase3TestRepository
+  val cdRepository: ContactDetailsMongoRepository = faststreamContactDetailsRepository
   val launchpadGatewayClient = LaunchpadGatewayClient
   val tokenFactory = UUIDFactory
   val dateTimeFactory = DateTimeFactory
   val emailClient = Phase3OnlineTestEmailClient
   val auditService = AuditService
-  val gatewayConfig = launchpadGatewayConfig
+  val gatewayConfig: LaunchpadGatewayConfig = launchpadGatewayConfig
   val eventService = EventService
 
 }
@@ -221,13 +223,13 @@ trait Phase3TestService extends OnlineTestService with Phase3TestConcern {
 
     def inviteOrResetOrRetake: Future[InviteResetOrTakeResponse] = {
       def hasNotCompletedSameInterviewBefore(phase3TestGroup: Phase3TestGroup) = {
-        phase3TestGroup.tests.filter(launchPadTest =>
-          !launchPadTest.completedDateTime.isDefined && launchPadTest.interviewId == interviewId).size > 0
+        phase3TestGroup.tests.exists(launchPadTest =>
+          launchPadTest.completedDateTime.isEmpty && launchPadTest.interviewId == interviewId)
       }
 
       def hasCompletedSameInterviewBefore(phase3TestGroup: Phase3TestGroup) = {
-        phase3TestGroup.tests.filter(launchPadTest =>
-          launchPadTest.completedDateTime.isDefined && launchPadTest.interviewId == interviewId).size > 0
+        phase3TestGroup.tests.exists(launchPadTest =>
+          launchPadTest.completedDateTime.isDefined && launchPadTest.interviewId == interviewId)
       }
 
       val customCandidateId = "FSCND-" + tokenFactory.generateUUID()
@@ -272,30 +274,7 @@ trait Phase3TestService extends OnlineTestService with Phase3TestConcern {
     )
   }
 
-  //scalastyle:on method.length
-  @deprecated
-  private def registerAndInviteApplicant(application: OnlineTestApplication, emailAddress: String, interviewId: Int, invitationDate: DateTime,
-                                         expirationDate: DateTime
-                                        )(implicit hc: HeaderCarrier, rh: RequestHeader): Future[LaunchpadTest] = {
-    val customCandidateId = "FSCND-" + tokenFactory.generateUUID()
-
-    for {
-      candidateId <- registerApplicant(application, emailAddress, customCandidateId)
-      invitation <- inviteApplicant(application, interviewId, candidateId)
-    } yield {
-      LaunchpadTest(interviewId = interviewId,
-        usedForResults = true,
-        testUrl = invitation.testUrl,
-        token = invitation.customInviteId,
-        candidateId = candidateId,
-        customCandidateId = invitation.customCandidateId,
-        invitationDate = invitationDate,
-        startedDateTime = None,
-        completedDateTime = None,
-        callbacks = LaunchpadTestCallbacks()
-      )
-    }
-  }
+  //scalastyle:on method.lengt
 
   def markAsStarted(launchpadInviteId: String, startedTime: DateTime = dateTimeFactory.nowLocalTimeZone)
                    (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = eventSink {
@@ -316,7 +295,7 @@ trait Phase3TestService extends OnlineTestService with Phase3TestConcern {
     eventSink {
       testRepository.getTestGroupByToken(launchpadInviteId).flatMap { test =>
         val launchpadTest = test.testGroup.tests.find(_.token == launchpadInviteId).get
-        if (launchpadTest.completedDateTime.isEmpty && !launchpadTest.startedDateTime.isEmpty) {
+        if (launchpadTest.completedDateTime.isEmpty && launchpadTest.startedDateTime.isDefined) {
           for {
             _ <- testRepository.updateTestCompletionTime(launchpadInviteId, dateTimeFactory.nowLocalTimeZone)
             updated <- testRepository.getTestGroupByToken(launchpadInviteId)
@@ -472,7 +451,7 @@ trait Phase3TestService extends OnlineTestService with Phase3TestConcern {
               oldLaunchpadTest.copy(usedForResults = false)
             }
           }
-          if (mergedLaunchpadTests.filter(_.interviewId == newLaunchpadTest.interviewId).size > 0) {
+          if (mergedLaunchpadTests.exists(_.interviewId == newLaunchpadTest.interviewId)) {
             Phase3TestGroup(newTestGroup.expirationDate, mergedLaunchpadTests)
           } else {
             Phase3TestGroup(newTestGroup.expirationDate, mergedLaunchpadTests :+ newLaunchpadTest.copy(usedForResults = true))
@@ -482,7 +461,7 @@ trait Phase3TestService extends OnlineTestService with Phase3TestConcern {
   }
 
   // TODO: All resets are launchpad side, contemplate whether we should be able to call this invite method twice
-  // or what we do if we want to reinvite
+  // or what we do if we want to re-invite
   private def markAsInvited(application: OnlineTestApplication)
                            (newPhase3TestGroup: Phase3TestGroup)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
     for {
