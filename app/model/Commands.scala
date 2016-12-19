@@ -22,18 +22,15 @@ import model.CandidateScoresCommands.CandidateScoresAndFeedback
 import model.CandidateScoresCommands.Implicits._
 import model.Exceptions.{ NoResultsReturned, TooManyEntries }
 import model.OnlineTestCommands.Implicits._
-import model.OnlineTestCommands.TestResult
 import model.PassmarkPersistedObjects.{ AssessmentCentrePassMarkInfo, AssessmentCentrePassMarkScheme }
 import model.PassmarkPersistedObjects.Implicits._
-import model.PersistedObjects.{ PersistedAnswer, PersistedQuestion }
-import model.SchemeType.SchemeType
+import model.PersistedObjects.PersistedQuestion
 import org.joda.time.{ DateTime, LocalDate, LocalTime }
 import play.api.libs.json._
 
 import scala.language.implicitConversions
-import model.command.{ AssessmentCentre, ProgressResponse }
-import model.exchange.passmarksettings.Phase1PassMarkSettings
-import model.report.{ CandidateProgressReportItem, QuestionnaireReportItem }
+import model.command.ProgressResponse
+import model.report.QuestionnaireReportItem
 
 //scalastyle:off
 object Commands {

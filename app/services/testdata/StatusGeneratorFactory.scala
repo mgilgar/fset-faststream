@@ -45,7 +45,7 @@ object StatusGeneratorFactory {
         // IN_PROGRESS_PARTNER_GRADUATE_PROGRAMMES should be deprecatedc
         case IN_PROGRESS_PARTNER_GRADUATE_PROGRAMMES => InProgressPartnerGraduateProgrammesStatusGenerator
         // IN_PROGRESS_SCHEME_PREFERENCES should be deprecated, look below, look below
-        case IN_PROGRESS_SCHEME_PREFERENCES => InProgressAssistanceDetailsStatusGenerator
+        case IN_PROGRESS_ASSISTANCE_DETAILS => InProgressAssistanceDetailsStatusGenerator
         case IN_PROGRESS_QUESTIONNAIRE => InProgressQuestionnaireStatusGenerator
         // IN_PROGRESS_PREVIEW should be deprecated, look below
         case IN_PROGRESS_PREVIEW => InProgressPreviewStatusGenerator

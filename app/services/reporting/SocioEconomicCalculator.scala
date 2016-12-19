@@ -16,7 +16,7 @@
 
 package services.reporting
 
-import model.PersistedObjects.PersistedAnswer
+import model.persisted.PersistedAnswer
 
 object SocioEconomicCalculator extends SocioEconomicScoreCalculator {
   val NotApplicable = 0

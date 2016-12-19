@@ -64,6 +64,14 @@ object DataStoreEvents {
   case class ApplicationExpiryReminder(appId: String) extends DataStoreEventWithAppId
   case class ApplicationWithdrawn(appId: String, createdByUser: String) extends DataStoreEventWithCreatedBy
 
+  case class UserInvitedToOnlineExercise(appId: String) extends DataStoreEventWithAppId
+  case class OnlineTestInvited(appId: String) extends DataStoreEventWithAppId
+  case class OnlineTestInvitationEmailSent(appId: String) extends DataStoreEventWithAppId
+  case class OnlineTestInvitationProcessComplete(appId: String) extends DataStoreEventWithAppId
+  case class UserRegisteredForOnlineExercise(appId: String) extends DataStoreEventWithAppId
+  case class OnlineExerciseResultsReceived(appId: String) extends DataStoreEventWithAppId
+  case class OnlineExerciseResultsRetrievedForSchedule(appId: String) extends DataStoreEventWithAppId
+
   case class OnlineExerciseStarted(appId: String) extends DataStoreEventWithAppId
   case class OnlineExercisesCompleted(appId: String) extends DataStoreEventWithAppId
   case class AllOnlineExercisesCompleted(appId: String) extends DataStoreEventWithAppId
@@ -73,11 +81,14 @@ object DataStoreEvents {
   case class FailedTestEmailSent(appId: String) extends DataStoreEventWithAppId
   case class SuccessTestEmailSent(appId: String) extends DataStoreEventWithAppId
 
+  case class EtrayRegistered(appId: String) extends DataStoreEventWithAppId
+  case class EtrayInvited(appId: String) extends DataStoreEventWithAppId
   case class ETrayStarted(appId: String) extends DataStoreEventWithAppId
   case class ETrayCompleted(appId: String) extends DataStoreEventWithAppId
   case class ETrayExtended(appId: String, createdByUser: String) extends DataStoreEventWithCreatedBy
   case class ETrayReset(appId: String, createdByUser: String) extends DataStoreEventWithCreatedBy
   case class ETrayResultSent(appId: String) extends DataStoreEventWithAppId
+  case class EtrayResultsReceived(appId: String) extends DataStoreEventWithAppId
 
   case class VideoInterviewInvited(appId: String) extends DataStoreEventWithAppId
   case class VideoInterviewCandidateRegistered(appId: String) extends DataStoreEventWithAppId

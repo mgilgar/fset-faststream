@@ -16,13 +16,14 @@
 
 package services.testdata
 
-import model.PersistedObjects.{ PersistedAnswer, PersistedQuestion }
+import model.PersistedObjects.PersistedQuestion
 import play.api.mvc.RequestHeader
 import repositories._
 import repositories.application.GeneralApplicationRepository
 import services.testdata.faker.DataFaker._
 import uk.gov.hmrc.play.http.HeaderCarrier
 import model.command.testdata.GeneratorConfig
+import model.persisted.PersistedAnswer
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

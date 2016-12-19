@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package model
+package model.persisted
 
-@deprecated("Fasttrack version. Use the new 'model.SchemeType' enum instead", "July 2016")
-object Schemes {
-  val Business = "Business"
-  val Commercial = "Commercial"
-  val DigitalAndTechnology = "Digital and technology"
-  val Finance = "Finance"
-  val ProjectDelivery = "Project delivery"
+import play.api.libs.json.Json
 
-  val AllSchemes = Business :: Commercial :: DigitalAndTechnology :: Finance :: ProjectDelivery :: Nil
+case class PersistedAnswer(answer: Option[String], otherDetails: Option[String], unknown: Option[Boolean])
+
+object PersistedAnswer {
+  implicit val persistedAnswerFormat = Json.format[PersistedAnswer]
 }

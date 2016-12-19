@@ -18,8 +18,7 @@ package services.allocation
 
 import connectors.CSREmailClient
 import model.Commands.ApplicationAssessment
-import model.PersistedObjects.AllocatedCandidate
-import model.persisted.ContactDetails
+import model.persisted.{ AllocatedCandidate, ContactDetails }
 import org.joda.time.DateTime
 import play.api.Logger
 import repositories._

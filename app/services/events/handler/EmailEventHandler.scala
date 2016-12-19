@@ -31,7 +31,7 @@ object EmailEventHandler extends EmailEventHandler {
 trait EmailEventHandler extends EventHandler[EmailEvent] {
   val emailClient: EmailClient
 
-  def handle(event: EmailEvent)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
+  def handle(event: EmailEvent)(implicit hc: HeaderCarrier): Future[Unit] = {
     Logger.info(s"Email event ${event.name}")
     event match {
       case _: EmailEvents.ApplicationWithdrawn => emailClient.sendWithdrawnConfirmation(event.to, event.name)

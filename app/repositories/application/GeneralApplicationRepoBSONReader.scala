@@ -16,7 +16,7 @@
 
 package repositories.application
 
-import model.{ ApplicationRoute, Schemes }
+import model.{ ApplicationRoute, SchemeType }
 import model.ApplicationRoute._
 import model.ApplicationStatus.{ apply => _, _ }
 import model.AssessmentScheduleCommands.ApplicationForAssessmentAllocation
@@ -113,11 +113,12 @@ trait GeneralApplicationRepoBSONReader extends CommonBSONDocuments {
       val overallScore = ca.flatMap(_.getAs[Double]("overallScore"))
 
       val se = pe.flatMap(_.getAs[BSONDocument]("schemes-evaluation"))
-      val commercial = se.flatMap(_.getAs[String](Schemes.Commercial).map(Result(_).toPassmark))
-      val digitalAndTechnology = se.flatMap(_.getAs[String](Schemes.DigitalAndTechnology).map(Result(_).toPassmark))
-      val business = se.flatMap(_.getAs[String](Schemes.Business).map(Result(_).toPassmark))
-      val projectDelivery = se.flatMap(_.getAs[String](Schemes.ProjectDelivery).map(Result(_).toPassmark))
-      val finance = se.flatMap(_.getAs[String](Schemes.Finance).map(Result(_).toPassmark))
+      // TODO: Fasttrack schemes, needs update
+      val commercial = se.flatMap(_.getAs[String](SchemeType.Commercial.toString).map(Result(_).toPassmark))
+      val digitalAndTechnology = se.flatMap(_.getAs[String](SchemeType.DigitalAndTechnology.toString).map(Result(_).toPassmark))
+      // val business = se.flatMap(_.getAs[String](SchemeType.Business).map(Result(_).toPassmark))
+      val projectDelivery = se.flatMap(_.getAs[String](SchemeType.ProjectDelivery.toString).map(Result(_).toPassmark))
+      val finance = se.flatMap(_.getAs[String](SchemeType.Finance.toString).map(Result(_).toPassmark))
 
       val pd = doc.getAs[BSONDocument]("personal-details")
       val firstName = pd.flatMap(_.getAs[String]("firstName"))
@@ -132,7 +133,7 @@ trait GeneralApplicationRepoBSONReader extends CommonBSONDocuments {
         CandidateScoresSummary(leadingAndCommunicatingAverage, collaboratingAndPartneringAverage,
           deliveringAtPaceAverage, makingEffectiveDecisionsAverage, changingAndImprovingAverage,
           buildingCapabilityForAllAverage, motivationFitAverage, overallScore),
-        SchemeEvaluation(commercial, digitalAndTechnology, business, projectDelivery, finance))
+        SchemeEvaluation(commercial, digitalAndTechnology, projectDelivery, finance))
     }
   }
 }

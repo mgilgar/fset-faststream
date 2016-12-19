@@ -22,6 +22,7 @@ import model.PersistedObjects
 import org.joda.time.{ DateTime, LocalDate }
 import reactivemongo.api.DB
 import model.ApplicationStatus._
+import model.persisted.AllocatedCandidate
 import reactivemongo.bson.{ BSONArray, BSONBoolean, BSONDocument, BSONObjectID }
 import repositories._
 import uk.gov.hmrc.mongo.ReactiveRepository
@@ -38,7 +39,7 @@ trait CandidateAllocationRepository {
 
 class CandidateAllocationMongoRepository(dateTime: DateTimeFactory)(implicit mongo: () => DB)
   extends ReactiveRepository[AllocatedCandidate, BSONObjectID]("application", mongo,
-    PersistedObjects.Implicits.allocatedCandidateFormats) with CandidateAllocationRepository
+    AllocatedCandidate.allocatedCandidateFormat) with CandidateAllocationRepository
     with RandomSelection with ReactiveRepositoryHelpers with CommonBSONDocuments {
 
   def nextUnconfirmedCandidateToSendReminder(daysBeforeExpiration: Int): Future[Option[AllocatedCandidate]] = {

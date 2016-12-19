@@ -20,6 +20,7 @@ import model.Commands.{ PhoneNumber, PostCode }
 import model.OnlineTestCommands.TestResult
 import org.joda.time.{ DateTime, LocalDate }
 import model.ApplicationStatus._
+import model.persisted.PersistedAnswer
 import play.api.libs.json._
 import reactivemongo.bson.Macros
 
@@ -30,7 +31,6 @@ object PersistedObjects {
 
   case class ApplicationIdWithUserIdAndStatus(applicationId: String, userId: String, applicationStatus: String)
 
-  case class PersistedAnswer(answer: Option[String], otherDetails: Option[String], unknown: Option[Boolean])
   case class PersistedQuestion(question: String, answer: PersistedAnswer)
 
   case class UserIdAndPhoneNumber(userId: String, phoneNumber: Option[PhoneNumber])
@@ -58,8 +58,6 @@ object PersistedObjects {
 
   case class OnlineTestPDFReport(applicationId: String)
 
-  case class AllocatedCandidate(candidateDetails: PersonalDetailsWithUserId, applicationId: String, expireDate: LocalDate)
-
   case class ApplicationProgressStatus(name: String, value: Boolean)
   case class ApplicationProgressStatuses(
     statuses: Option[List[ApplicationProgressStatus]],
@@ -69,17 +67,15 @@ object PersistedObjects {
     applicationStatus: String, progressStatuses: ApplicationProgressStatuses)
 
   object Implicits {
-    implicit val addressFormats = Json.format[Address]
-    implicit val answerFormats = Json.format[PersistedAnswer]
-    implicit val questionFormats = Json.format[PersistedQuestion]
-    implicit val personalDetailsWithUserIdFormats = Json.format[PersonalDetailsWithUserId]
-    implicit val testFormats = Json.format[TestResult]
-    implicit val candidateTestReportFormats = Json.format[CandidateTestReport]
-    implicit val allocatedCandidateFormats = Json.format[AllocatedCandidate]
-    implicit val applicationProgressStatusFormats = Json.format[ApplicationProgressStatus]
-    implicit val applicationProgressStatusesFormats = Json.format[ApplicationProgressStatuses]
-    implicit val applicationUserFormats = Json.format[ApplicationUser]
+    implicit val addressFormat = Json.format[Address]
+    implicit val questionFormat = Json.format[PersistedQuestion]
+    implicit val personalDetailsWithUserIdFormat = Json.format[PersonalDetailsWithUserId]
+    implicit val testFormat = Json.format[TestResult]
+    implicit val candidateTestReportFormat = Json.format[CandidateTestReport]
+    implicit val applicationProgressStatusFormat = Json.format[ApplicationProgressStatus]
+    implicit val applicationProgressStatusesFormat = Json.format[ApplicationProgressStatuses]
+    implicit val applicationUserFormat = Json.format[ApplicationUser]
 
-    implicit val onlineTestPdfReportFormats = Json.format[OnlineTestPDFReport]
+    implicit val onlineTestPdfReportFormat = Json.format[OnlineTestPDFReport]
   }
 }

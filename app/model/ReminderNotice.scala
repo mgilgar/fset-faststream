@@ -33,6 +33,7 @@ sealed case class ReminderNotice(hoursBeforeReminder: Int, progressStatuses: Pro
     case PHASE2_TESTS_FIRST_REMINDER => (DAYS, Phase_2)
     case PHASE3_TESTS_SECOND_REMINDER => (HOURS, Phase_3)
     case PHASE3_TESTS_FIRST_REMINDER => (DAYS, Phase_3)
+    case other => throw UnexpectedException(s"Value $other was unexpected in reminder notice match.")
   }
 
   val timeUnit: TimeUnit = timeUnitAndPhase._1

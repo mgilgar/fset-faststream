@@ -26,6 +26,7 @@ import model.persisted._
 import model._
 import org.joda.time.DateTime
 import model.events.AuditEvents
+import model.events.AuditEvents.OnlineTestInvitationEmailSent
 import model.events.EventTypes._
 import play.api.Logger
 import play.api.mvc.RequestHeader
@@ -81,10 +82,13 @@ trait OnlineTestService extends TimeExtension with EventSink {
 
   protected def emailInviteToApplicant(application: OnlineTestApplication, emailAddress: String,
     invitationDate: DateTime, expirationDate: DateTime
-  )(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
+  )(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = eventSink {
     val preferredName = application.preferredName
     emailClient.sendOnlineTestInvitation(emailAddress, preferredName, expirationDate).map { _ =>
-      audit("OnlineTestInvitationEmailSent", application.userId, Some(emailAddress))
+      AuditEvents.OnlineTestInvitationEmailSent(
+        "userId" -> application.userId,
+        "email" -> emailAddress
+      ) :: DataStoreEvents.OnlineTestInvitationEmailSent(application.applicationId) :: Nil
     }
   }
 

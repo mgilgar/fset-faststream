@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package services.reporting
+package model.persisted
 
-import model.persisted.PersistedAnswer
+import model.PersistedObjects.PersonalDetailsWithUserId
+import org.joda.time.LocalDate
+import play.api.libs.json.Json
 
-trait Calculable {
-  def calculateAsInt(answers: Map[String, PersistedAnswer]): Int
-  def calculate(answers: Map[String, String]): String
+case class AllocatedCandidate(candidateDetails: PersonalDetailsWithUserId, applicationId: String, expireDate: LocalDate)
+
+object AllocatedCandidate {
+  implicit val allocatedCandidateFormat = Json.format[AllocatedCandidate]
 }

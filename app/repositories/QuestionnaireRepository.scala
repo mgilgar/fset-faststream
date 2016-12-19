@@ -16,8 +16,8 @@
 
 package repositories
 
-import model.PersistedObjects
-import model.PersistedObjects.{ PersistedAnswer, PersistedQuestion }
+import model.PersistedObjects.PersistedQuestion
+import model.persisted.PersistedAnswer
 import model.report.QuestionnaireReportItem
 import play.api.libs.json._
 import reactivemongo.api.{ DB, ReadPreference }
@@ -40,7 +40,7 @@ trait QuestionnaireRepository {
 
 class QuestionnaireMongoRepository(socioEconomicCalculator: SocioEconomicScoreCalculator)(implicit mongo: () => DB)
   extends ReactiveRepository[PersistedAnswer, BSONObjectID]("questionnaire", mongo,
-    PersistedObjects.Implicits.answerFormats, ReactiveMongoFormats.objectIdFormats) with QuestionnaireRepository
+    PersistedAnswer.persistedAnswerFormat, ReactiveMongoFormats.objectIdFormats) with QuestionnaireRepository
     with ReactiveRepositoryHelpers with BaseBSONReader {
 
   override def addQuestions(applicationId: String, questions: List[PersistedQuestion]): Future[Unit] = {

@@ -45,6 +45,19 @@ object AuditEvents {
   case class FailedTestEmailSent(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
   case class SuccessTestEmailSent(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
 
+  case class UserRegisteredForOnlineExercise(seqDetails: (String, String)*) extends AuditEventNoRequest(seqDetails.toMap)
+  case class UserInvitedToOnlineExercise(seqDetails: (String, String)*) extends AuditEventNoRequest(seqDetails.toMap)
+  case class OnlineTestInvitationEmailSent(seqDetails: (String, String)*) extends AuditEventNoRequest(seqDetails.toMap)
+  case class OnlineTestInvited(seqDetails: (String, String)*) extends AuditEventNoRequest(seqDetails.toMap)
+  case class OnlineTestInvitationProcessComplete(seqDetails: (String, String)*) extends AuditEventNoRequest(seqDetails.toMap)
+
+  case class OnlineExerciseResultsRetrievedForSchedule(seqDetails: (String, String)*) extends AuditEventNoRequest(seqDetails.toMap)
+
+  case class OnlineExerciseResultsReceived(seqDetails: (String, String)*) extends AuditEventNoRequest(seqDetails.toMap)
+
+  case class EtrayRegistered(seqDetails: (String, String)*) extends AuditEventNoRequest(seqDetails.toMap)
+  case class EtrayInvited(seqDetails: (String, String)*) extends AuditEventNoRequest(seqDetails.toMap)
+  case class EtrayResultsReceived(seqDetails: (String, String)*) extends AuditEventNoRequest(seqDetails.toMap)
   case class Phase2TestsReset(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
   case class Phase2TestInvitationProcessComplete(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
 

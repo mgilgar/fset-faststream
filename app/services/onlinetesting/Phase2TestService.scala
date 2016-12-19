@@ -66,7 +66,7 @@ object Phase2TestService extends Phase2TestService {
 }
 
 // scalastyle:off number.of.methods
-trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Phase2TestSelector {
+trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Phase2TestSelector with EventSink {
   val actor: ActorSystem
   val phase2TestRepo: Phase2TestRepository
   val cubiksGatewayClient: CubiksGatewayClient
@@ -125,6 +125,7 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
                                                      reminder: ReminderNotice)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
     emailClient.sendTestExpiringReminder(emailAddress, expiringTest.preferredName,
       reminder.hoursBeforeReminder, reminder.timeUnit, expiringTest.expiryDate).map { _ =>
+      // TODO: Remove this config parameter from the audit name for fasttrack 2017
       audit(s"ReminderPhase2ExpiringOnlineTestNotificationBefore${reminder.hoursBeforeReminder}HoursEmailed",
         expiringTest.userId, Some(emailAddress))
     }
@@ -198,17 +199,22 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
   }
 
   def registerApplicants(candidates: List[OnlineTestApplication], tokens: Seq[String])
-                        (implicit hc: HeaderCarrier): Future[Map[Int, (OnlineTestApplication, String, Registration)]] = {
+                        (implicit hc: HeaderCarrier,
+                         rh: RequestHeader): Future[Map[Int, (OnlineTestApplication, String, Registration)]] = {
     cubiksGatewayClient.registerApplicants(candidates.size).map(_.zipWithIndex.map { case (registration, idx) =>
       val candidate = candidates(idx)
-      audit("Phase2TestRegistered", candidate.userId)
+      eventSink {
+        AuditEvents.EtrayRegistered("applicationId" -> candidate.applicationId) ::
+          DataStoreEvents.EtrayRegistered(candidate.applicationId) :: Nil
+      }
       (registration.userId, (candidate, tokens(idx), registration))
     }.toMap)
   }
 
   def inviteApplicants(candidateData: Map[Int, (OnlineTestApplication, String, Registration)],
                       schedule: Phase2Schedule)
-                      (implicit hc: HeaderCarrier): Future[List[Phase2TestInviteData]] = {
+                      (implicit hc: HeaderCarrier,
+                       rh: RequestHeader): Future[List[Phase2TestInviteData]] = {
     val invites = candidateData.values.map { case (application, token, registration) =>
       buildInviteApplication(application, token, registration.userId, schedule)
     }.toList
@@ -220,7 +226,10 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
 
     cubiksGatewayClient.inviteApplicants(filteredInvites).map(_.map { invitation =>
       val (application, token, registration) = candidateData(invitation.userId)
-      audit("Phase2TestInvited", application.userId)
+      eventSink {
+        AuditEvents.EtrayInvited("applicationId" -> application.applicationId) ::
+        DataStoreEvents.EtrayInvited(application.applicationId) :: Nil
+      }
       Phase2TestInviteData(application, schedule.scheduleId, token, registration, invitation)
     })
   }
@@ -493,7 +502,7 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
   // It's a bit fiddly to extract up to the OnlineTestService/Repository traits without defining another common
   // CubiksTestService/Repository layer as it will be different for Launchapd.
   // Still feels wrong to leave it here when it's 99% the same as phase1.
-  def retrieveTestResult(testProfile: RichTestGroup)(implicit hc: HeaderCarrier): Future[Unit] = {
+  def retrieveTestResult(testProfile: RichTestGroup)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
 
     def insertTests(testResults: List[(OnlineTestCommands.TestResult, U)]): Future[Unit] = {
       Future.sequence(testResults.map {
@@ -504,15 +513,16 @@ trait Phase2TestService extends OnlineTestService with Phase2TestConcern with Ph
       }).map(_ => ())
     }
 
-    def maybeUpdateProgressStatus(appId: String) = {
+    def maybeUpdateProgressStatus(appId: String)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = eventSink {
       phase2TestRepo.getTestGroup(appId).flatMap { eventualProfile =>
 
         val latestProfile = eventualProfile.getOrElse(throw new Exception(s"No profile returned for $appId"))
         if (latestProfile.activeTests.forall(_.testResult.isDefined)) {
           phase2TestRepo.updateProgressStatus(appId, ProgressStatuses.PHASE2_TESTS_RESULTS_RECEIVED).map(_ =>
-            audit(s"ProgressStatusSet${ProgressStatuses.PHASE2_TESTS_RESULTS_RECEIVED}", appId))
+            AuditEvents.EtrayResultsReceived("applicationId" -> appId) ::
+              DataStoreEvents.EtrayResultsReceived(appId) :: Nil)
         } else {
-          Future.successful(())
+          Future.successful(Nil)
         }
       }
     }

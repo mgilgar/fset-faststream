@@ -20,9 +20,8 @@ import model.EvaluationResults._
 import model.FlagCandidatePersistedObject.FlagCandidate
 import model.OnlineTestCommands.OnlineTestApplication
 import model.PassmarkPersistedObjects._
-import model.PersistedObjects.PersistedAnswer
 import model.command.WithdrawApplication
-import model.persisted.{ AssistanceDetails, ContactDetails, PersonalDetails }
+import model.persisted.{ AssistanceDetails, ContactDetails, PersistedAnswer, PersonalDetails }
 import org.joda.time.{ DateTime, DateTimeZone, LocalDate }
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import reactivemongo.api.indexes.Index

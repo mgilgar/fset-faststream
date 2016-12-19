@@ -83,6 +83,7 @@ trait Phase1TestService extends OnlineTestService with Phase1TestConcern with Re
   )(implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
     emailClient.sendTestExpiringReminder(emailAddress, expiringTest.preferredName,
       reminder.hoursBeforeReminder, reminder.timeUnit, expiringTest.expiryDate).map { _ =>
+      // TODO: refactor this so it does not contain a config parameter/uses auditevents
       audit(
         s"ReminderPhase1ExpiringOnlineTestNotificationBefore${reminder.hoursBeforeReminder}HoursEmailed",
         expiringTest.userId, Some(emailAddress)
@@ -147,7 +148,7 @@ trait Phase1TestService extends OnlineTestService with Phase1TestConcern with Re
   }
 
   def registerAndInviteForTestGroup(application: OnlineTestApplication, scheduleNames: List[String])
-                                   (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = {
+                                   (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = eventSink {
     val (invitationDate, expirationDate) = calcOnlineTestDates(gatewayConfig.phase1Tests.expiryTimeInDays)
 
     // TODO work out a better way to do this
@@ -177,11 +178,17 @@ trait Phase1TestService extends OnlineTestService with Phase1TestConcern with Re
       _ <- registerAndInviteProcess
       emailAddress <- candidateEmailAddress(application.userId)
       _ <- emailInviteToApplicant(application, emailAddress, invitationDate, expirationDate)
-    } yield audit("OnlineTestInvitationProcessComplete", application.userId)
+    } yield {
+      AuditEvents.OnlineTestInvitationProcessComplete(
+        "userId" -> application.userId,
+        "email" -> emailAddress
+      ) ::
+        DataStoreEvents.OnlineTestInvitationProcessComplete(application.applicationId) :: Nil
+    }
   }
 
   private def registerAndInviteApplicant(application: OnlineTestApplication, scheduleId: Int, invitationDate: DateTime,
-    expirationDate: DateTime)(implicit hc: HeaderCarrier): Future[CubiksTest] = {
+    expirationDate: DateTime)(implicit hc: HeaderCarrier, rh: RequestHeader): Future[CubiksTest] = {
     val authToken = tokenFactory.generateUUID()
 
     for {
@@ -211,16 +218,18 @@ trait Phase1TestService extends OnlineTestService with Phase1TestConcern with Re
       }).map(_ => ())
     }
 
-    def maybeUpdateProgressStatus(appId: String) = {
+    def maybeUpdateProgressStatus(appId: String)(implicit hc: HeaderCarrier) = eventSink {
       phase1TestRepo.getTestGroup(appId).flatMap { eventualProfile =>
 
         val latestProfile = eventualProfile.getOrElse(throw new Exception(s"No profile returned for $appId"))
 
         if (latestProfile.activeTests.forall(_.testResult.isDefined)) {
-          phase1TestRepo.updateProgressStatus(appId, ProgressStatuses.PHASE1_TESTS_RESULTS_RECEIVED).map(_ =>
-            audit(s"ProgressStatusSet${ProgressStatuses.PHASE1_TESTS_RESULTS_RECEIVED}", appId))
+          phase1TestRepo.updateProgressStatus(appId, ProgressStatuses.PHASE1_TESTS_RESULTS_RECEIVED).map { _ =>
+            AuditEvents.OnlineExerciseResultsReceived("applicationId" -> appId) ::
+              DataStoreEvents.OnlineExerciseResultsReceived(appId) :: Nil
+          }
         } else {
-          Future.successful(())
+          Future.successful(Nil)
         }
       }
     }
@@ -236,35 +245,46 @@ trait Phase1TestService extends OnlineTestService with Phase1TestConcern with Re
       _ <- insertTests(eventualTestResults)
       _ <- maybeUpdateProgressStatus(testProfile.applicationId)
     } yield {
-      audit(s"ResultsRetrievedForSchedule", testProfile.applicationId)
+      AuditEvents.OnlineExerciseResultsRetrievedForSchedule("applicationId" -> testProfile.applicationId) ::
+      DataStoreEvents.OnlineExerciseResultsRetrievedForSchedule(testProfile.applicationId) :: Nil
     }
   }
 
-  def registerApplicant(application: OnlineTestApplication, token: String)(implicit hc: HeaderCarrier): Future[Int] = {
+  def registerApplicant(application: OnlineTestApplication, token: String)(implicit hc: HeaderCarrier,
+                                                                           rh: RequestHeader): Future[Int] = {
     val preferredName = CubiksSanitizer.sanitizeFreeText(application.preferredName)
     val registerApplicant = RegisterApplicant(preferredName, "", token + "@" + gatewayConfig.emailDomain)
     cubiksGatewayClient.registerApplicant(registerApplicant).map { registration =>
-      audit("UserRegisteredForOnlineTest", application.userId)
+      eventSink {
+        AuditEvents.UserRegisteredForOnlineExercise("applicationId" -> application.applicationId) ::
+          DataStoreEvents.UserRegisteredForOnlineExercise(application.applicationId) :: Nil
+      }
       registration.userId
     }
   }
 
   private def inviteApplicant(application: OnlineTestApplication, authToken: String, userId: Int, scheduleId: Int)
-    (implicit hc: HeaderCarrier): Future[Invitation] = {
+    (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Invitation] = {
 
     val inviteApplicant = buildInviteApplication(application, authToken, userId, scheduleId)
     cubiksGatewayClient.inviteApplicant(inviteApplicant).map { invitation =>
-      audit("UserInvitedToOnlineTest", application.userId)
+      eventSink {
+        AuditEvents.UserInvitedToOnlineExercise("applicationId" -> application.applicationId) ::
+        DataStoreEvents.UserInvitedToOnlineExercise(application.applicationId) :: Nil
+      }
       invitation
     }
   }
 
-  private def markAsInvited(application: OnlineTestApplication)(newOnlineTestProfile: Phase1TestProfile): Future[Unit] = for {
-    currentOnlineTestProfile <- phase1TestRepo.getTestGroup(application.applicationId)
-    updatedTestProfile <- insertOrAppendNewTests(application.applicationId, currentOnlineTestProfile, newOnlineTestProfile)
-    _ <- phase1TestRepo.resetTestProfileProgresses(application.applicationId, determineStatusesToRemove(updatedTestProfile))
-  } yield {
-    audit("OnlineTestInvited", application.userId)
+  private def markAsInvited(application: OnlineTestApplication)(newOnlineTestProfile: Phase1TestProfile): Future[Unit] = eventSink {
+    for {
+      currentOnlineTestProfile <- phase1TestRepo.getTestGroup(application.applicationId)
+      updatedTestProfile <- insertOrAppendNewTests(application.applicationId, currentOnlineTestProfile, newOnlineTestProfile)
+      _ <- phase1TestRepo.resetTestProfileProgresses(application.applicationId, determineStatusesToRemove(updatedTestProfile))
+    } yield {
+      AuditEvents.OnlineTestInvited("applicationId" -> application.applicationId) ::
+      DataStoreEvents.OnlineTestInvited(application.applicationId) :: Nil
+    }
   }
 
   private def insertOrAppendNewTests(applicationId: String, currentProfile: Option[Phase1TestProfile],
