@@ -247,7 +247,7 @@ class OnlineTestServiceSpec extends UnitSpec {
       override val appRepository = appRepositoryMock
       override val eventService = eventServiceMock
 
-      def nextApplicationsReadyForOnlineTesting(maxBatchSize: Int): Future[List[OnlineTestApplication]] = Future.successful(List.empty)
+      override def nextApplicationsReadyForOnlineTesting(maxBatchSize: Int): Future[List[OnlineTestApplication]] = Future.successful(List.empty)
       def registerAndInviteForTestGroup(application: OnlineTestApplication)
                                        (implicit hc: HeaderCarrier, rh: RequestHeader): Future[Unit] = success
       def registerAndInviteForTestGroup(applications: List[OnlineTestApplication])
