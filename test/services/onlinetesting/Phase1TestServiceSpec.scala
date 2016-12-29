@@ -203,8 +203,8 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
         eqTo(emailContactDetails), eqTo(preferredName), eqTo(expirationDate)
       )(any[HeaderCarrier])
 
-      verify(auditServiceMock, times(1)).logEventNoRequest("UserRegisteredForOnlineTest", auditDetails)
-      verify(auditServiceMock, times(1)).logEventNoRequest("UserInvitedToOnlineTest", auditDetails)
+      verify(auditServiceMock, times(1)).logEventNoRequest(eqTo("UserRegisteredForOnlineExercise"), any[Map[String, String]])
+      verify(auditServiceMock, times(1)).logEventNoRequest("UserInvitedToOnlineExercise", auditDetails)
       verify(auditServiceMock, times(1)).logEventNoRequest("OnlineTestInvitationEmailSent", auditDetailsWithEmail)
       verify(auditServiceMock, times(1)).logEventNoRequest("OnlineTestInvitationProcessComplete", auditDetails)
       verify(auditServiceMock, times(1)).logEventNoRequest("OnlineTestInvited", auditDetails)
@@ -223,8 +223,8 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
         eqTo(emailContactDetails), eqTo(preferredName), eqTo(expirationDate)
       )(any[HeaderCarrier])
 
-      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineTest", auditDetails)
-      verify(auditServiceMock, times(2)).logEventNoRequest("UserInvitedToOnlineTest", auditDetails)
+      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineExercise", auditDetails)
+      verify(auditServiceMock, times(2)).logEventNoRequest("UserInvitedToOnlineExercise", auditDetails)
       verify(auditServiceMock, times(1)).logEventNoRequest("OnlineTestInvitationEmailSent", auditDetailsWithEmail)
       verify(auditServiceMock, times(1)).logEventNoRequest("OnlineTestInvitationProcessComplete", auditDetails)
       verify(auditServiceMock, times(1)).logEventNoRequest("OnlineTestInvited", auditDetails)
@@ -241,7 +241,7 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       verify(auditServiceMock, times(0)).logEventNoRequest(any[String], any[Map[String, String]])
     }
 
-    "fail and audit 'UserRegisteredForOnlineTest' if invitation fails" in new OnlineTest {
+    "fail and audit 'UserRegisteredForOnlineExercise' if invitation fails" in new OnlineTest {
       when(cubiksGatewayClientMock.registerApplicant(any[RegisterApplicant]))
         .thenReturn(Future.successful(registration))
       when(cubiksGatewayClientMock.inviteApplicant(any[InviteApplicant])).thenReturn(
@@ -251,11 +251,11 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication)
       result.failed.futureValue mustBe a[ConnectorException]
 
-      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineTest", auditDetails)
+      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineExercise", auditDetails)
       verify(auditServiceMock, times(2)).logEventNoRequest(any[String], any[Map[String, String]])
     }
 
-    "fail, audit 'UserRegisteredForOnlineTest' and audit 'UserInvitedToOnlineTest' " +
+    "fail, audit 'UserRegisteredForOnlineExercise' and audit 'UserInvitedToOnlineExercise' " +
       "if there is an exception retrieving the contact details" in new OnlineTest {
       when(cubiksGatewayClientMock.registerApplicant(eqTo(registerApplicant)))
         .thenReturn(Future.successful(registration))
@@ -267,12 +267,12 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication)
       result.failed.futureValue mustBe an[Exception]
 
-      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineTest", auditDetails)
-      verify(auditServiceMock, times(2)).logEventNoRequest("UserInvitedToOnlineTest", auditDetails)
+      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineExercise", auditDetails)
+      verify(auditServiceMock, times(2)).logEventNoRequest("UserInvitedToOnlineExercise", auditDetails)
       verify(auditServiceMock, times(4)).logEventNoRequest(any[String], any[Map[String, String]])
     }
 
-    "fail, audit 'UserRegisteredForOnlineTest' and audit 'UserInvitedToOnlineTest'" +
+    "fail, audit 'UserRegisteredForOnlineExercise' and audit 'UserInvitedToOnlineExercise'" +
       " if there is an exception sending the invitation email" in new OnlineTest {
       when(cubiksGatewayClientMock.registerApplicant(any[RegisterApplicant]))
         .thenReturn(Future.successful(registration))
@@ -289,12 +289,12 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       val result = phase1TestService.registerAndInviteForTestGroup(onlineTestApplication)
       result.failed.futureValue mustBe an[Exception]
 
-      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineTest", auditDetails)
-      verify(auditServiceMock, times(2)).logEventNoRequest("UserInvitedToOnlineTest", auditDetails)
+      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineExercise", auditDetails)
+      verify(auditServiceMock, times(2)).logEventNoRequest("UserInvitedToOnlineExercise", auditDetails)
       verify(auditServiceMock, times(4)).logEventNoRequest(any[String], any[Map[String, String]])
     }
 
-    "fail, audit 'UserRegisteredForOnlineTest', audit 'UserInvitedToOnlineTest'" +
+    "fail, audit 'UserRegisteredForOnlineExercise', audit 'UserInvitedToOnlineExercise'" +
       ", not send invitation email to user" +
       "if there is an exception storing the status and the online profile data to database" in new OnlineTest {
       when(cubiksGatewayClientMock.registerApplicant(eqTo(registerApplicant)))
@@ -315,8 +315,8 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       verify(emailClientMock, times(0)).sendOnlineTestInvitation(any[String], any[String], any[DateTime])(
         any[HeaderCarrier]
       )
-      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineTest", auditDetails)
-      verify(auditServiceMock, times(2)).logEventNoRequest("UserInvitedToOnlineTest", auditDetails)
+      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineExercise", auditDetails)
+      verify(auditServiceMock, times(2)).logEventNoRequest("UserInvitedToOnlineExercise", auditDetails)
       verify(auditServiceMock, times(4)).logEventNoRequest(any[String], any[Map[String, String]])
     }
 
@@ -343,8 +343,8 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
         eqTo(emailContactDetails), eqTo(preferredName), eqTo(expirationDate)
       )(any[HeaderCarrier])
 
-      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineTest", auditDetails)
-      verify(auditServiceMock, times(2)).logEventNoRequest("UserInvitedToOnlineTest", auditDetails)
+      verify(auditServiceMock, times(2)).logEventNoRequest("UserRegisteredForOnlineExercise", auditDetails)
+      verify(auditServiceMock, times(2)).logEventNoRequest("UserInvitedToOnlineExercise", auditDetails)
       verify(auditServiceMock, times(1)).logEventNoRequest("OnlineTestInvitationEmailSent", auditDetailsWithEmail)
       verify(auditServiceMock, times(1)).logEventNoRequest("OnlineTestInvitationProcessComplete", auditDetails)
       verify(auditServiceMock, times(1)).logEventNoRequest("OnlineTestInvited", auditDetails)
@@ -558,7 +558,8 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
         "appId", "userId", testProfile
       )).futureValue
 
-      verify(auditServiceMock, times(2)).logEventNoRequest(any[String], any[Map[String, String]])
+      phase1TestService.verifyAuditEvents(2, List("OnlineExerciseResultsRetrievedForSchedule",
+                                                  "ProgressStatusModified"))
       verify(otRepositoryMock).updateProgressStatus(any[String], any[ProgressStatus])
     }
 
@@ -582,7 +583,6 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
         "appId", "userId", testProfile
       )).futureValue
 
-      verify(auditServiceMock, times(1)).logEventNoRequest(any[String], any[Map[String, String]])
       verify(otRepositoryMock, times(0)).updateProgressStatus(any[String], any[ProgressStatus])
     }
   }
@@ -659,7 +659,7 @@ class Phase1TestServiceSpec extends UnitWithAppSpec with ExtendedTimeout
       override val delaySecsBetweenRegistrations = 0
       val appRepository = appRepositoryMock
       val cdRepository = cdRepositoryMock
-      val phase1TestRepo = otRepositoryMock
+      val testRepository = otRepositoryMock
       val cubiksGatewayClient = cubiksGatewayClientMock
       val emailClient = emailClientMock
       val auditService = auditServiceMock

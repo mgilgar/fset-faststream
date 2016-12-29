@@ -84,6 +84,7 @@ object AuditEvents {
   case class FastPassUserAcceptedEmailSent(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
   case class FastPassUserAccepted(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
   case class FastPassUserRejected(mapDetails: Map[String, String]) extends AuditEventNoRequest(mapDetails)
+  case class ProgressStatusModified(seqDetails: (String, String)*) extends AuditEvent(seqDetails.toMap)
 
 }
 // scalastyle:on number.of.methods

@@ -30,6 +30,7 @@ import play.api.libs.json._
 
 import scala.language.implicitConversions
 import model.command.ProgressResponse
+import model.persisted.PersistedAnswer
 import model.report.QuestionnaireReportItem
 
 //scalastyle:off

@@ -25,6 +25,7 @@ sealed trait DataStoreEvent extends EventType {
   lazy val applicationId: Option[String] = None
   lazy val userId: Option[String] = None
   lazy val createdBy: Option[String] = None
+  lazy val newProgressStatus: Option[String] = None
 
   require(applicationId.isDefined || userId.isDefined)
 
@@ -49,6 +50,13 @@ sealed trait DataStoreEventWithCreatedBy extends DataStoreEvent {
   val createdByUser: String
   override lazy val applicationId = Some(appId)
   override lazy val createdBy = Some(createdByUser)
+}
+
+sealed trait DataStoreEventWithProgressEvent extends DataStoreEvent {
+  val appId: String
+  val newStatus: String
+  override lazy val applicationId = Some(appId)
+  override lazy val newProgressStatus = Some(newStatus)
 }
 
 // scalastyle:off number.of.methods
@@ -109,6 +117,7 @@ object DataStoreEvents {
   case class FastPassRejected(appId: String, createdByUser: String) extends DataStoreEventWithCreatedBy
   case class AdjustmentsCommentUpdated(appId: String) extends DataStoreEventWithAppId
   case class AdjustmentsCommentRemoved(appId: String) extends DataStoreEventWithAppId
+  case class ProgressStatusUpdated(appId: String, newStatus: String) extends DataStoreEventWithProgressEvent
   // scalastyle:on
 
 

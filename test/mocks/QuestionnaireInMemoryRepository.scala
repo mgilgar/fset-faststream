@@ -16,7 +16,8 @@
 
 package mocks
 
-import model.PersistedObjects.{ PersistedAnswer, PersistedQuestion }
+import model.PersistedObjects.PersistedQuestion
+import model.persisted.PersistedAnswer
 import model.report.QuestionnaireReportItem
 import repositories.QuestionnaireRepository
 

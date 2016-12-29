@@ -18,6 +18,7 @@
 package scheduler.onlinetesting
 
 import config.WaitingScheduledJobConfig
+import model.EmptyRequestHeader
 import scheduler.BasicJobConfig
 import scheduler.clustering.SingleInstanceScheduledJob
 import services.onlinetesting.{ OnlineTestService, Phase1TestService, Phase2TestService }
@@ -42,6 +43,7 @@ trait RetrieveResultsJob extends SingleInstanceScheduledJob[BasicJobConfig[Waiti
     onlineTestingService.nextTestGroupWithReportReady.flatMap {
       case Some(richTestGroup) =>
         implicit val hc = new HeaderCarrier()
+        implicit val rh = EmptyRequestHeader
         onlineTestingService.retrieveTestResult(richTestGroup)
       case None => Future.successful(())
     }

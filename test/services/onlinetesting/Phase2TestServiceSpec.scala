@@ -108,7 +108,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
       last._2 mustBe tokens.last
       last._3 mustBe registrations.last
 
-      verify(auditServiceMock, times(2)).logEventNoRequest(eqTo("Phase2TestRegistered"), any[Map[String, String]])
+      verify(auditServiceMock, times(2)).logEventNoRequest(eqTo("EtrayRegistered"), any[Map[String, String]])
     }
   }
 
@@ -139,7 +139,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
       when(otRepositoryMock.insertCubiksTests(any[String], any[Phase2TestGroup])).thenReturn(Future.successful(()))
       phase2TestService.registerAndInviteForTestGroup(candidates).futureValue
 
-      verify(auditServiceMock, times(2)).logEventNoRequest(eqTo("Phase2TestRegistered"), any[Map[String, String]])
+      verify(auditServiceMock, times(2)).logEventNoRequest(eqTo("EtrayRegistered"), any[Map[String, String]])
       verify(auditServiceMock, times(2)).logEventNoRequest(eqTo("Phase2TestInvited"), any[Map[String, String]])
       verify(phase2TestService.auditEventHandlerMock, times(2)).handle(any[Phase2TestInvitationProcessComplete])(any[HeaderCarrier],
         any[RequestHeader])
@@ -161,7 +161,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
 
       phase2TestService.registerAndInviteForTestGroup(adjustmentCandidates).futureValue
 
-      verify(auditServiceMock).logEventNoRequest(eqTo("Phase2TestRegistered"), any[Map[String, String]])
+      verify(auditServiceMock).logEventNoRequest(eqTo("EtrayRegistered"), any[Map[String, String]])
       verify(auditServiceMock).logEventNoRequest(eqTo("Phase2TestInvited"), any[Map[String, String]])
       verify(auditServiceMock).logEventNoRequest(eqTo("Phase2TestInvitationProcessComplete"), any[Map[String, String]])
       verify(otRepositoryMock).insertOrUpdateTestGroup(any[String], any[Phase2TestGroup])
@@ -758,7 +758,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
     val phase2TestService = new Phase2TestService with EventServiceFixture with Phase2TestSelector {
       val appRepository = appRepositoryMock
       val cdRepository = cdRepositoryMock
-      val phase2TestRepo = otRepositoryMock
+      val testRepository = otRepositoryMock
       val cubiksGatewayClient = cubiksGatewayClientMock
       val emailClient = emailClientMock
       val auditService = auditServiceMock

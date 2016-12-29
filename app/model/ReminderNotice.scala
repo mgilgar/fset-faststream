@@ -16,6 +16,7 @@
 
 package model
 
+import model.Exceptions.UnexpectedException
 import model.ProgressStatuses._
 
 import scala.concurrent.duration.{ DAYS, HOURS, TimeUnit }

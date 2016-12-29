@@ -23,5 +23,6 @@ import play.api.libs.json.Json
 case class AllocatedCandidate(candidateDetails: PersonalDetailsWithUserId, applicationId: String, expireDate: LocalDate)
 
 object AllocatedCandidate {
+  import model.PersistedObjects.Implicits.personalDetailsWithUserIdFormat
   implicit val allocatedCandidateFormat = Json.format[AllocatedCandidate]
 }

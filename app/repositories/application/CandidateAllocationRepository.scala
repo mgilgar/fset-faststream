@@ -17,7 +17,7 @@
 package repositories.application
 
 import factories.DateTimeFactory
-import model.PersistedObjects.{ AllocatedCandidate, PersonalDetailsWithUserId }
+import model.PersistedObjects.PersonalDetailsWithUserId
 import model.PersistedObjects
 import org.joda.time.{ DateTime, LocalDate }
 import reactivemongo.api.DB

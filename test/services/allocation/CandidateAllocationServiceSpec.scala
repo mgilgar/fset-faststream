@@ -19,8 +19,8 @@ package services.allocation
 import connectors.CSREmailClient
 import model.Address
 import model.Commands.ApplicationAssessment
-import model.PersistedObjects.{ AllocatedCandidate, PersonalDetailsWithUserId }
-import model.persisted.ContactDetails
+import model.PersistedObjects.PersonalDetailsWithUserId
+import model.persisted.{ AllocatedCandidate, ContactDetails }
 import org.joda.time.{ DateTime, LocalDate }
 import org.mockito.ArgumentMatchers.{ eq => eqTo, _ }
 import org.mockito.Mockito._
