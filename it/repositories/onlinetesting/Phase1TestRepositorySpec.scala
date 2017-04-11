@@ -589,8 +589,7 @@ class Phase1TestRepositorySpec extends MongoRepositorySpec with ApplicationDataF
 
         val resultsReady = CubiksTestResultReady(
           reportId = Some(1),
-          reportStatus = "Ready",
-          reportLinkURL = Some("link")
+          reportStatus = "Ready"
         )
 
         phase1TestRepo.updateTestReportReady(TestProfile.tests.head.cubiksUserId, resultsReady).futureValue
@@ -601,7 +600,6 @@ class Phase1TestRepositorySpec extends MongoRepositorySpec with ApplicationDataF
         cubiksTest.resultsReadyToDownload mustBe true
         cubiksTest.reportId mustBe resultsReady.reportId
         cubiksTest.reportStatus mustBe Some(resultsReady.reportStatus)
-        cubiksTest.reportLinkURL mustBe resultsReady.reportLinkURL
       }
     }
   }
