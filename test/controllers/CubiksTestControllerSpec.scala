@@ -146,7 +146,7 @@ class CubiksTestControllerSpec extends UnitWithAppSpec {
   "markResultsReady" should {
     "mark the phase1 test results as ready" in {
       val cubiksUserId = 1
-      val cubiksTestResult = CubiksTestResultReady(Some(1), "Ready", Some(""))
+      val cubiksTestResult = CubiksTestResultReady(Some(1), "Ready")
       when(mockPhase1TestService.markAsReportReadyToDownload(eqTo(cubiksUserId), eqTo(cubiksTestResult))
       ).thenReturn(Future.successful(()))
 
@@ -156,7 +156,7 @@ class CubiksTestControllerSpec extends UnitWithAppSpec {
 
     "mark the phase2 test as completed" in {
       val cubiksUserId = 1
-      val cubiksTestResult = CubiksTestResultReady(Some(1), "Ready", Some(""))
+      val cubiksTestResult = CubiksTestResultReady(Some(1), "Ready")
       when(mockPhase1TestService.markAsReportReadyToDownload(eqTo(cubiksUserId), eqTo(cubiksTestResult))
       ).thenReturn(Future.failed(CannotFindTestByCubiksId("")))
       when(mockPhase2TestService.markAsReportReadyToDownload(eqTo(cubiksUserId), eqTo(cubiksTestResult))
@@ -168,7 +168,7 @@ class CubiksTestControllerSpec extends UnitWithAppSpec {
 
     "return test not found" in {
       val cubiksUserId = 1
-      val cubiksTestResult = CubiksTestResultReady(Some(1), "Ready", Some(""))
+      val cubiksTestResult = CubiksTestResultReady(Some(1), "Ready")
       when(mockPhase1TestService.markAsReportReadyToDownload(eqTo(cubiksUserId), eqTo(cubiksTestResult))
       ).thenReturn(Future.failed(CannotFindTestByCubiksId("")))
       when(mockPhase2TestService.markAsReportReadyToDownload(eqTo(cubiksUserId), eqTo(cubiksTestResult))

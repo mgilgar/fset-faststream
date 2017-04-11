@@ -167,7 +167,6 @@ trait OnlineTestService extends TimeExtension with EventSink {
   def updateTestReportReady(cubiksTest: CubiksTest, reportReady: CubiksTestResultReady) = cubiksTest.copy(
     resultsReadyToDownload = reportReady.reportStatus == "Ready",
     reportId = reportReady.reportId,
-    reportLinkURL = reportReady.reportLinkURL,
     reportStatus = Some(reportReady.reportStatus)
   )
 

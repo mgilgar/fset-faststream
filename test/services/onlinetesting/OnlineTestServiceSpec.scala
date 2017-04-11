@@ -234,7 +234,6 @@ class OnlineTestServiceSpec extends UnitSpec {
 
       result.resultsReadyToDownload mustBe true
       result.reportId mustBe reportReady.reportId
-      result.reportLinkURL mustBe reportReady.reportLinkURL
       result.reportStatus mustBe Some(reportReady.reportStatus)
       cubiksTest eq result mustBe false
     }
@@ -246,7 +245,6 @@ class OnlineTestServiceSpec extends UnitSpec {
 
       result.resultsReadyToDownload mustBe false
       result.reportId mustBe reportReady.reportId
-      result.reportLinkURL mustBe reportReady.reportLinkURL
       result.reportStatus mustBe Some("Bogus")
       cubiksTest eq result mustBe false
     }
@@ -301,7 +299,7 @@ class OnlineTestServiceSpec extends UnitSpec {
       invitationDate = invitationDate,
       participantScheduleId = 235
     )
-    val reportReady = CubiksTestResultReady(reportId = Some(198), reportStatus = "Ready", reportLinkURL = Some("www.report.com"))
+    val reportReady = CubiksTestResultReady(reportId = Some(198), reportStatus = "Ready")
     val successContactDetails = Future.successful(ContactDetails(outsideUk = false, Address("London"), Some("N32 6GH"),
       None, email, "0989836387432"))
     val successNotification = Future.successful(Some(TestResultNotification(applicationId, userId, preferredName)))

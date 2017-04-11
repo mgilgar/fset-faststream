@@ -222,7 +222,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
 
   "mark report as ready to download" should {
     "not change progress if not all the active tests have reports ready" in new Phase2TestServiceFixture {
-      val reportReady = CubiksTestResultReady(reportId = Some(1), reportStatus = "Ready", reportLinkURL = Some("www.report.com"))
+      val reportReady = CubiksTestResultReady(reportId = Some(1), reportStatus = "Ready")
 
       when(otRepositoryMock.getTestProfileByCubiksId(cubiksUserId)).thenReturn(
         Future.successful(Phase2TestGroupWithAppId("appId", phase2TestProfile.copy(
@@ -241,7 +241,7 @@ class Phase2TestServiceSpec extends UnitSpec with ExtendedTimeout {
     }
 
     "change progress to reports ready if all the active tests have reports ready" in new Phase2TestServiceFixture {
-      val reportReady = CubiksTestResultReady(reportId = Some(1), reportStatus = "Ready", reportLinkURL = Some("www.report.com"))
+      val reportReady = CubiksTestResultReady(reportId = Some(1), reportStatus = "Ready")
 
       when(otRepositoryMock.getTestProfileByCubiksId(cubiksUserId)).thenReturn(
         Future.successful(Phase2TestGroupWithAppId("appId", phase2TestProfile.copy(

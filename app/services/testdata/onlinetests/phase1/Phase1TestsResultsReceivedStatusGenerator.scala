@@ -63,7 +63,7 @@ trait Phase1TestsResultsReceivedStatusGenerator extends ConstructiveGenerator {
         candidate <- previousStatusGenerator.generate(generationId, generatorConfig)
         _ <- FutureEx.traverseSerial(candidate.phase1TestGroup.get.tests) { test =>
           val id = test.testId
-          val result = CubiksTestResultReady(Some(id * 123), "Ready", Some(s"http://fakeurl.com/report$id"))
+          val result = CubiksTestResultReady(Some(id * 123), "Ready")
           otService.markAsReportReadyToDownload(id, result)
         }
         cubiksUserIds <- Future.successful(candidate.phase1TestGroup.get.tests.map(_.testId))

@@ -109,7 +109,6 @@ trait OnlineTestRepository extends RandomSelection with ReactiveRepositoryHelper
     val update = BSONDocument("$set" -> BSONDocument(
       s"testGroups.$phaseName.tests.$$.resultsReadyToDownload" -> (reportReady.reportStatus == "Ready"),
       s"testGroups.$phaseName.tests.$$.reportId" -> reportReady.reportId,
-      s"testGroups.$phaseName.tests.$$.reportLinkURL" -> reportReady.reportLinkURL,
       s"testGroups.$phaseName.tests.$$.reportStatus" -> Some(reportReady.reportStatus)
     ))
     findAndUpdateCubiksTest(cubiksUserId, update)
