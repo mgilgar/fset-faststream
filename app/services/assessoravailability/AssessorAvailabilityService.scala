@@ -62,4 +62,11 @@ trait AssessorAvailabilityService {
   def countSubmitted(): Future[Int] = {
     aaRepository.countSubmitted
   }
+
+  def remindUnsubmitted(): Future[Unit] = {
+    // Select all unsubmitted in assessor or qac
+    // val submittedUserIds = aaRepository.getSubmittedUserIds
+    // Email
+    Future { () }
+  }
 }

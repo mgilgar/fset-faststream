@@ -54,4 +54,8 @@ trait AssessorAvailabilityController extends BaseController {
       case ex: Throwable => InternalServerError("Could not retrieve a count of submitted assessor availabilities")
     }
   }
+
+  def remindUnsubmitted(): Action[AnyContent] = Action.async { implicit request =>
+    assessorAvailabilityService.remindUnsubmitted().map(_ => Ok)
+  }
 }

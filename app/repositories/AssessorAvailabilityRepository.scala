@@ -35,6 +35,8 @@ trait AssessorAvailabilityRepository {
   def save(settings: AssessorAvailability): Future[Unit]
 
   def countSubmitted: Future[Int]
+
+  def submittedUserIds: Future[Set[String]]
 }
 
 class AssessorAvailabilityMongoRepository(implicit mongo: () => DB)
@@ -71,6 +73,17 @@ class AssessorAvailabilityMongoRepository(implicit mongo: () => DB)
     }.flatMap { fields =>
       val query = Json.obj(fields.toSeq: _*)
       collection.count(Some(query))
+    }
+  }
+
+  override def submittedUserIds: Future[Set[String]] = {
+    AssessorAvailabilityService.regions.map { regions =>
+      regions.map { region =>
+        s"availability.$region" -> Json.toJsFieldJsValueWrapper(Json.obj("$exists" -> true))
+      }
+    }.flatMap { fields =>
+      val query = Json.obj(fields.toSeq: _*)
+      collection.find(query).cursor[BSONDocument]().collect[Set]().map(doc => doc.map(_.getAs[String]("userId").get))
     }
   }
 }
