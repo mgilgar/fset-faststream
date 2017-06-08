@@ -16,18 +16,27 @@
 
 package services.assessoravailability
 
+import connectors.{ AuthProviderClient, CSREmailClient }
 import model.Exceptions.AssessorAvailabilityNotFoundException
 import repositories._
+import repositories.application.GeneralApplicationRepository
+import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration._
+import language.postfixOps
 
 object AssessorAvailabilityService extends AssessorAvailabilityService {
+  val aRepository: GeneralApplicationRepository = applicationRepository
+  val authProviderClient: AuthProviderClient = AuthProviderClient
   val aaRepository: AssessorAvailabilityMongoRepository = assessorAvailabilityRepository
   val assessmentCentreYamlRepository: AssessmentCentreRepository = AssessmentCentreYamlRepository
 }
 
 trait AssessorAvailabilityService {
+  val aRepository: GeneralApplicationRepository
+  val authProviderClient: AuthProviderClient
   val aaRepository: AssessorAvailabilityRepository
   val assessmentCentreYamlRepository: AssessmentCentreRepository
 
@@ -63,10 +72,17 @@ trait AssessorAvailabilityService {
     aaRepository.countSubmitted
   }
 
-  def remindUnsubmitted(): Future[Unit] = {
+  def remindUnsubmitted()(implicit hc: HeaderCarrier): Future[Unit] = {
     // Select all unsubmitted in assessor or qac
-    // val submittedUserIds = aaRepository.getSubmittedUserIds
-    // Email
+    for {
+      submittedUserIds <- aaRepository.submittedUserIds
+      allQacAndAssessorUserIdsAndEmails <- authProviderClient.findAllByRoles(Seq(Assessor, QAC)).map(_.userId -> _.email) //Return candidate object
+      unsubmittedUserIdsAndEmails = allQacAndAssessorUserIdsAndEmails.filterNot { case (k,v) => submittedUserIds.contains(k) }
+      userIdEmailPair <- unsubmittedUserIdsAndEmails
+    } yield {
+      // Candidate object
+      CSREmailClient.sendUnsubmittedAssessorReminderEmail(userIdEmailPair.email, "Mr Smith"), 20 seconds)
+    }
     Future { () }
   }
 }
