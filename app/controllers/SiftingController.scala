@@ -34,10 +34,18 @@ trait SiftingController extends BaseController {
 
   val siftService: ApplicationSiftService
 
-  def findApplicationsReadyForSchemeSifting(schemeId: String): Action[AnyContent] = Action.async { implicit request =>
-    siftService.findApplicationsReadyForSchemeSift(SchemeId(schemeId)).map { candidates =>
+  def findApplicationsReadyForSchemeSifting(schemeId: String, lockForUserId: String): Action[AnyContent] = Action.async { implicit request =>
+    siftService.findAndLockApplicationsReadyForSift(SchemeId(schemeId)).map { candidates =>
       Ok(Json.toJson(candidates))
     }
+  }
+
+  def extendLockExpiry(userId: String): Action[JsValue] = Action.async { implicit request =>
+
+  }
+
+  def releaseLocks(userId: String): Action[JsValue] = Action.async {
+
   }
 
   def siftCandidateApplication: Action[JsValue] = Action.async(parse.json) { implicit request =>

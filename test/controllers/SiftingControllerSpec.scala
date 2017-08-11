@@ -40,7 +40,7 @@ class SiftingControllerSpec extends UnitWithAppSpec {
 
   "findApplicationsReadyForSifting" should {
     "return list of candidates" in {
-      when(mockSiftService.findApplicationsReadyForSchemeSift(any[SchemeId])).thenReturn(Future.successful(CandidateExamples.NewCandidates))
+      when(mockSiftService.findAndLockApplicationsReadyForSift(any[SchemeId])).thenReturn(Future.successful(CandidateExamples.NewCandidates))
       val response = controller.findApplicationsReadyForSchemeSifting(Commercial.toString)(fakeRequest)
       status(response) mustBe OK
       contentAsString(response) mustBe Json.toJson[List[Candidate]](CandidateExamples.NewCandidates).toString()

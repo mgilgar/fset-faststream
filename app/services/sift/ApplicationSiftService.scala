@@ -67,7 +67,7 @@ trait ApplicationSiftService extends CurrentSchemeStatusHelper with CommonBSONDo
     updates.map(SerialUpdateResult.fromEither)
   }
 
-  def findApplicationsReadyForSchemeSift(schemeId: SchemeId): Future[Seq[Commands.Candidate]] = {
+  def findAndLockApplicationsReadyForSift(schemeId: SchemeId): Future[Seq[Commands.Candidate]] = {
     applicationSiftRepo.findApplicationsReadyForSchemeSift(schemeId)
   }
 
