@@ -50,15 +50,15 @@ abstract class AssessmentScoresMongoRepository(dateTime: DateTimeFactory, collec
     exercisesScores: AssessmentScoresExercise): Future[Unit] = {
     val query = BSONDocument("applicationId" -> applicationId.toString())
 
-    val newVersion: Option[String] = Some(UUIDFactory.generateUUID())
+    //val newVersion: Option[String] = Some(UUIDFactory.generateUUID())
 
     val applicationScoresBSON = exercisesScores.version match {
       case Some(_) => BSONDocument(
-        s"${exercise.toString}" -> exercisesScores.copy(version = newVersion)
+        s"${exercise.toString}" -> exercisesScores //.copy(version = newVersion)
       )
       case _ => BSONDocument(
         "applicationId" -> applicationId,
-        s"${exercise.toString}" -> AssessmentScoresExercise.bsonHandler.write(exercisesScores.copy(version = newVersion))
+        s"${exercise.toString}" -> AssessmentScoresExercise.bsonHandler.write(exercisesScores) //exercisesScores.copy(version = newVersion))
       )
     }
 
