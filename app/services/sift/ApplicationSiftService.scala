@@ -16,15 +16,19 @@
 
 package services.sift
 
+import java.time.LocalDateTime
+
 import common.FutureEx
+import config.MicroserviceAppConfig
 import factories.DateTimeFactory
 import model.{ ProgressStatuses, SchemeId, SerialUpdateResult, SiftRequirement }
 import model.command.ApplicationForSift
+import model.persisted.sift.SiftAllocation
 import model.persisted.SchemeEvaluationResult
 import reactivemongo.bson.BSONDocument
 import repositories.{ CommonBSONDocuments, CurrentSchemeStatusHelper, SchemeRepositoryImpl, SchemeYamlRepository }
 import repositories.application.{ GeneralApplicationMongoRepository, GeneralApplicationRepository }
-import repositories.sift.{ ApplicationSiftMongoRepository, ApplicationSiftRepository }
+import repositories.sift.{ ApplicationSiftMongoRepository, ApplicationSiftRepository, SiftAllocationRepository }
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -34,6 +38,8 @@ object ApplicationSiftService extends ApplicationSiftService {
   val applicationSiftRepo: ApplicationSiftMongoRepository = repositories.applicationSiftRepository
   val applicationRepo: GeneralApplicationMongoRepository = repositories.applicationRepository
   val schemeRepo = SchemeYamlRepository
+  val allocationRepo = SiftAllocationMongoRepository
+  val config = MicroserviceAppConfig
   val dateTimeFactory = DateTimeFactory
 }
 
@@ -41,17 +47,21 @@ trait ApplicationSiftService extends CurrentSchemeStatusHelper with CommonBSONDo
   def applicationSiftRepo: ApplicationSiftRepository
   def applicationRepo: GeneralApplicationRepository
   def schemeRepo: SchemeRepositoryImpl
+  def allocationRepo: SiftAllocationRepository
+  def config: MicroserviceAppConfig
 
-  def nextApplicationsReadyForSiftStage(batchSize: Int): Future[Seq[ApplicationForSift]] = {
+  def applicationsReadyForSift(batchSize: Int): Future[Seq[ApplicationForSift]] = {
     applicationSiftRepo.nextApplicationsForSiftStage(batchSize)
   }
 
   def assignSchemeSiftToSifter(applicationId: String, schemeId: SchemeId, userId: String) = {
+    val expiry = dateTimeFactory.nowLocalTimeZone.plusHours(config.siftAllocationAssignedForMinutes)
 
+    allocationRepo.addAllocation(SiftAllocation(applicationId, schemeId, userId, expiry))
   }
 
   def releaseSchemeSiftFromSifter(applicationId: String, schemeId: SchemeId, userId: String) = {
-
+    allocationRepo.removeAllocation(applicationId, schemeId, userId)
   }
 
   private def requiresForms(schemeIds: Seq[SchemeId]) = {

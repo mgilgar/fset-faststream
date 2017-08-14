@@ -42,7 +42,7 @@ trait SiftingController extends BaseController {
   }
 
   def updateSifterAllocation(schemeId: String, applicationId: String, userId: String) = {
-
+    siftService.assignSchemeSiftToSifter(applicationId, schemeId, userId)
   }
 
   def siftCandidateApplication: Action[JsValue] = Action.async(parse.json) { implicit request =>

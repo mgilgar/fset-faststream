@@ -16,6 +16,7 @@
 
 package model
 
+import model.persisted.sift.SiftAllocation
 import play.api.libs.json.{ Json, OFormat }
 
 // scalastyle:off number.of.methods
@@ -127,6 +128,8 @@ object Exceptions {
   case class SiftAnswersSubmitted(m: String) extends Exception(m)
 
   case class LastSchemeWithdrawException(m: String) extends Exception(m)
+
+  case class SiftAllocationExists(existing: SiftAllocation, m: String) extends Exception(m)
 }
 
 // scalastyle:on number.of.methods

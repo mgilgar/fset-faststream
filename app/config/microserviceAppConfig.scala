@@ -172,6 +172,8 @@ trait MicroserviceAppConfig extends ServicesConfig with RunMode {
     underlyingConfiguration
       .as[AssessmentEvaluationMinimumCompetencyLevel]("microservice.services.assessment-evaluation.minimum-competency-level")
 
+  lazy val siftAllocationAssignedForMinutes = underlyingConfiguration.as[Int]("microservice.services.sift-allocations.assignedForMinutes")
+
   lazy val fixerJobConfig =
     underlyingConfiguration.as[ScheduledJobConfig]("scheduling.online-testing.fixer-job")
 

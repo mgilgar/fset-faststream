@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package model.persisted.sift
-
-import java.time.LocalDateTime
+package model.exchange.sift
 
 import model.SchemeId
-import model.persisted.sift.SiftAnswersStatus.SiftAnswersStatus
 import play.api.libs.json._
-import reactivemongo.bson.{ BSON, BSONDocument, BSONHandler, BSONString, Macros }
+import reactivemongo.bson.Macros
 
 
 case class SiftAllocation(applicationId: String,
   schemeId: SchemeId,
-  userId: String,
-  expires: LocalDateTime)
+  userId: String)
 
 object SiftAllocation
 {

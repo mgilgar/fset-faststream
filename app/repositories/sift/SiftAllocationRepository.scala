@@ -18,10 +18,11 @@ package repositories.sift
 
 import java.time.LocalDateTime
 
-import model.Exceptions.{ SchemeSpecificAnswerNotFound, SiftAnswersIncomplete, SiftAnswersSubmitted }
+import model.Exceptions.{ SchemeSpecificAnswerNotFound, SiftAllocationExists, SiftAnswersIncomplete, SiftAnswersSubmitted }
 import model.SchemeId
 import model.persisted.sift.SiftAnswersStatus.SiftAnswersStatus
 import model.persisted.sift._
+import org.joda.time.DateTime
 import reactivemongo.api.DB
 import reactivemongo.bson.Producer.nameValue2Producer
 import reactivemongo.bson._
@@ -34,17 +35,10 @@ import scala.concurrent.Future
 import scala.language.postfixOps
 
 trait SiftAllocationRepository {
-  def addAllocation(siftAllocation: SiftAllocation): Future[Unit]
+  def addAllocation(siftAllocation: SiftAllocation): Future[SiftAllocation]
   def removeAllocation(siftAllocation: SiftAllocation): Future[Unit]
   def removeAllocationsOlderThan(dateTime: LocalDateTime): Future[Int]
-
-  def addSchemeSpecificAnswer(applicationId: String, schemeId: SchemeId, answer: SchemeSpecificAnswer): Future[Unit]
-  def addGeneralAnswers(applicationId: String, answer: GeneralQuestionsAnswers): Future[Unit]
-  def findSiftAnswers(applicationId: String): Future[Option[SiftAnswers]]
-  def findSchemeSpecificAnswer(applicationId: String, schemeId: SchemeId): Future[Option[SchemeSpecificAnswer]]
-  def findGeneralQuestionsAnswers(applicationId: String): Future[Option[GeneralQuestionsAnswers]]
-  def findSiftAnswersStatus(applicationId: String): Future[Option[SiftAnswersStatus.Value]]
-  def submitAnswers(applicationId: String, requiredSchemes: Set[SchemeId]): Future[Unit]
+  def updateExpiriesForUser(userId: String, newExpiry: LocalDateTime): Future[Int]
 }
 
 class SiftAllocationMongoRepository()(implicit mongo: () => DB)
@@ -52,130 +46,56 @@ class SiftAllocationMongoRepository()(implicit mongo: () => DB)
     SiftAllocation.siftAllocationFormat, ReactiveMongoFormats.objectIdFormats) with SiftAllocationRepository
     with ReactiveRepositoryHelpers with BaseBSONReader {
 
-  def addAllocation(siftAllocation: SiftAllocation): Future[Unit] = {
-    val validator = singleUpsertValidator(applicationId, "adding scheme specific answer")
-    collection.update(
-      query,
-      BSONDocument("$set" -> updatedSiftAnswers),
-      upsert = true
-    ) map validator
+  def addAllocation(siftAllocation: SiftAllocation): Future[SiftAllocation] = {
+    val query = BSONDocument("$and" -> BSONArray(
+      BSONDocument("applicationId" -> siftAllocation.applicationId),
+      BSONDocument("schemeId" -> siftAllocation.schemeId))
+    )
 
+    // Atomic return existing or insert if not exists
+    val allocation = collection.findAndUpdate(
+      query,
+      BSONDocument("$setOnInsert" -> siftAllocation),
+      upsert = true,
+      fetchNewObject = true
+    ).one[SiftAllocation]
+
+    allocation map { sa: SiftAllocation =>
+      if (sa.userId != siftAllocation.userId) {
+        Future.failed(SiftAllocationExists(sa, s"Allocation already exists for ${siftAllocation.applicationId} - ${siftAllocation.schemeId}"))
+      } else {
+        Future.successful(sa)
+      }
+    }
   }
 
-  def removeAllocation(siftAllocation: SiftAllocation): Future[Unit] = {
+  def removeAllocation(applicationId: String, schemeId: SchemeId, userId: String): Future[Unit] = {
+    val query = BSONDocument("$and" -> BSONArray(
+      BSONDocument("applicationId" -> applicationId),
+      BSONDocument("schemeId" -> schemeId),
+      BSONDocument("userId" -> userId))
+    )
 
+    collection.remove(query) map singleRemovalValidator(s"$applicationId - $schemeId - $userId", "Existing lock doesn't exist/match")
   }
 
   def removeAllocationsOlderThan(dateTime: LocalDateTime): Future[Int] = {
+    val query = BSONDocument("created" -> BSONDocument("$lt" ->
+      new DateTime(dateTime.getYear, dateTime.getMonth, dateTime.getDayOfMonth, dateTime.getHour, dateTime.getMinute, dateTime.getSecond))
+    )
 
+    collection.remove(query) map(_.n)
   }
 
-  override def addSchemeSpecificAnswer(applicationId: String, schemeId: SchemeId, answer: SchemeSpecificAnswer): Future[Unit] = {
-    failWithSubmitted(applicationId) {
-      val query = BSONDocument("applicationId" -> applicationId)
-      val validator = singleUpsertValidator(applicationId, "adding scheme specific answer")
+  def updateExpiriesForUser(userId: String, newExpiry: LocalDateTime): Future[Int] = {
+    val query = BSONDocument("userId" -> userId)
 
-      findSiftAnswers(applicationId).flatMap { result =>
-        val updatedSiftAnswers: SiftAnswers = result match {
-          case Some(existing) => existing.copy(schemeAnswers = existing.schemeAnswers + (schemeId.value -> answer))
-          case _ => SiftAnswers(applicationId, SiftAnswersStatus.DRAFT, None, Map(schemeId.value -> answer))
-        }
-
-        collection.update(
-          query,
-          BSONDocument("$set" -> updatedSiftAnswers),
-          upsert = true
-        ) map validator
-      }
-    }
-  }
-
-  override def addGeneralAnswers(applicationId: String, answers: GeneralQuestionsAnswers): Future[Unit] = {
-    failWithSubmitted(applicationId) {
-      val query = BSONDocument("applicationId" -> applicationId)
-      val validator = singleUpsertValidator(applicationId, actionDesc = "adding general answers")
-
-      findSiftAnswers(applicationId).flatMap { result =>
-        val updatedSiftAnswers: SiftAnswers = result match {
-          case Some(existing) => existing.copy(generalAnswers = Some(answers))
-          case _ => SiftAnswers(applicationId, SiftAnswersStatus.DRAFT, Some(answers), Map.empty)
-        }
-
-        collection.update(
-          query,
-          BSONDocument("$set" -> updatedSiftAnswers),
-          upsert = true
-        ) map validator
-      }
-    }
-  }
-
-  override def findSiftAnswers(applicationId: String): Future[Option[SiftAnswers]] = {
-    val query = BSONDocument("applicationId" -> applicationId)
-    collection.find(query).one[SiftAnswers]
-  }
-
-  override def findSchemeSpecificAnswer(applicationId: String, schemeId: SchemeId): Future[Option[SchemeSpecificAnswer]] = {
-    val query = BSONDocument("$and" -> BSONArray(
-      BSONDocument("applicationId" -> applicationId),
-      BSONDocument(s"schemeAnswers.$schemeId" -> BSONDocument("$exists" -> true))
-    ))
-    val projection = BSONDocument(s"schemeAnswers.$schemeId" -> 1, "_id" -> 0)
-    collection.find(query, projection).one[BSONDocument].map(_.flatMap { doc =>
-        doc.getAs[BSONDocument]("schemeAnswers").flatMap { sa =>
-          sa.getAs[SchemeSpecificAnswer](s"$schemeId")
-        }
-    })
-  }
-
-  override def findGeneralQuestionsAnswers(applicationId: String): Future[Option[GeneralQuestionsAnswers]] = {
-    val query = BSONDocument("$and" -> BSONArray(
-      BSONDocument("applicationId" -> applicationId),
-      BSONDocument(s"generalAnswers" -> BSONDocument("$exists" -> true))
-    ))
-    val projection = BSONDocument(s"generalAnswers" -> 1, "_id" -> 0)
-    collection.find(query, projection).one[BSONDocument].map {
-      result => result.flatMap { outer =>
-        outer.getAs[BSONDocument]("generalAnswers").map(a => GeneralQuestionsAnswers.generalQuestionsAnswersHandler.read(a))
-      }
-    }
-  }
-
-  override def findSiftAnswersStatus(applicationId: String): Future[Option[SiftAnswersStatus]] = {
-    val query = BSONDocument("applicationId" -> applicationId)
-    val projection = BSONDocument("status" -> 1, "_id" -> 0)
-    collection.find(query, projection).one[BSONDocument].map {
-      result => result.flatMap { outer =>
-        outer.getAs[BSONString]("status").map(a => SiftAnswersStatus.SiftAnswersStatusHandler.read(a))
-      }
-    }
-  }
-
-  override def submitAnswers(applicationId: String, requiredSchemes: Set[SchemeId]): Future[Unit] = {
-    failWithSubmitted(applicationId) {
-      val query = BSONDocument("$and" -> BSONArray(
-        BSONDocument("applicationId" -> applicationId),
-        BSONDocument("generalAnswers" -> BSONDocument("$exists" -> true))
-      ).add(BSONDocument("$and" -> BSONArray(requiredSchemes map { schemeId =>
-        BSONDocument(s"schemeAnswers.$schemeId" -> BSONDocument("$exists" -> true))
-      } toSeq))))
-      val validator = singleUpdateValidator(applicationId, actionDesc = "Submitting sift answers",
-        SiftAnswersIncomplete(
-          s"Additional questions missing general or scheme specific " +
-             s"(${requiredSchemes.map(_.value).mkString(", ")}) answers for $applicationId"))
-
-      collection.update(
-        query,
-        BSONDocument("$set" -> BSONDocument("status" -> SiftAnswersStatus.SUBMITTED))
-      ) map validator
-    }
-  }
-
-  private def failWithSubmitted(applicationId: String)(action: => Future[Unit]): Future[Unit] = {
-    findSiftAnswersStatus(applicationId).flatMap {
-      case Some(SiftAnswersStatus.SUBMITTED) =>
-        Future.failed(SiftAnswersSubmitted(s"Additional answers for applicationId: $applicationId have already been submitted"))
-      case _ => action
-    }
+    collection.update(
+      query,
+      BSONDocument("$set" -> BSONDocument("expires" ->
+        new DateTime(dateTime.getYear, dateTime.getMonth, dateTime.getDayOfMonth, dateTime.getHour, dateTime.getMinute, dateTime.getSecond))),
+      upsert = false,
+      multi = true
+    ) map(_.n)
   }
 }
