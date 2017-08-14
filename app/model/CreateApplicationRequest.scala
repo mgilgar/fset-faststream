@@ -16,25 +16,11 @@
 
 package model
 
-import controllers._
 import model.ApplicationRoute.ApplicationRoute
-import model.Exceptions.{ NoResultsReturned, TooManyEntries }
-import model.OnlineTestCommands.Implicits._
-import model.OnlineTestCommands.TestResult
-import model.assessmentscores.AssessmentScoresAllExercises
-import org.joda.time.{ DateTime, LocalDate, LocalTime }
-import play.api.libs.json._
+import play.api.libs.json.{ Format, Json }
 
-import scala.language.implicitConversions
-import model.command.ProgressResponse
-import model.persisted.{ QuestionnaireAnswer, QuestionnaireQuestion }
-import model.report.QuestionnaireReportItem
+case class CreateApplicationRequest(userId: String, applicationRoute: ApplicationRoute, frameworkId: String)
 
-//scalastyle:off
-object Commands {
-
-  type PostCode = String
-  type PhoneNumber = String
-  type IsNonSubmitted = Boolean
-
+object CreateApplicationRequest {
+  implicit val createApplicationRequestFormat: Format[CreateApplicationRequest] = Json.format[CreateApplicationRequest]
 }
