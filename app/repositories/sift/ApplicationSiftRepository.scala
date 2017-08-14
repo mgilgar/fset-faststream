@@ -44,7 +44,7 @@ trait ApplicationSiftRepository {
 
   def nextApplicationsForSiftStage(maxBatchSize: Int): Future[List[ApplicationForSift]]
 
-  def findApplicationsReadyForSchemeSift(schemeId: SchemeId): Future[Seq[Candidate]]
+  def assignApplicationsReadyForSchemeSift(schemeId: SchemeId): Future[Seq[Candidate]]
   def getSiftEvaluations(applicationId: String): Future[Seq[SchemeEvaluationResult]]
   def siftApplicationForScheme(applicationId: String, result: SchemeEvaluationResult): Future[Unit]
   def siftApplicationForSchemeBSON(applicationId: String, result: SchemeEvaluationResult): (BSONDocument, BSONDocument)
@@ -88,7 +88,7 @@ class ApplicationSiftMongoRepository(
     }
   }
 
-  def findApplicationsReadyForSchemeSift(schemeId: SchemeId): Future[Seq[Candidate]] = {
+  def assignApplicationsReadyForSchemeSift(schemeId: SchemeId): Future[Seq[Candidate]] = {
 
     val notSiftedOnScheme = BSONDocument(
       s"testGroups.$phaseName.evaluation.result.schemeId" -> BSONDocument("$nin" -> BSONArray(schemeId.value))

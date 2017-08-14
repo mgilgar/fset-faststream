@@ -59,9 +59,8 @@ GET         /assessment-centre/pass-mark-settings                        control
 GET         /search/find-by-id/user/:userId/framework/:frameworkId       controllers.SearchForApplicantsController.findById(userId: String, frameworkId: String)
 POST        /search/find-by-criteria                                     controllers.SearchForApplicantsController.findByCriteria
 
-GET         /applications/sifting/:schemeId                              controllers.SiftingController.findAndLockApplicationsReadyForSifting(schemeId: String, lockForUserId: String)
-PUT         /applications/sifting/locks/:userId/extendExpiry             controllers.SiftingController.extendLockExpiry(userId: String)
-PUT         /applications/sifting/locks/:userId/release                  controllers.SiftingController.releaseLocks(userId: String)
+GET         /applications/sifting/:schemeId                              controllers.SiftingController.applicationsReadyForSifting(schemeId: String)
+PUT         /applications/sifting/:schemeId/:applicationId/allocation    controllers.SiftingController.updateSifterAllocation(schemeId: String, applicationId: String)
 PUT         /applications/sifting                                        controllers.SiftingController.siftCandidateApplication(userId: String)
 
 GET         /report/diversity/:frameworkId                               controllers.ReportingController.diversityReport(frameworkId: String)

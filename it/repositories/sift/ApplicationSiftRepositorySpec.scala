@@ -79,7 +79,7 @@ class ApplicationSiftRepositorySpec extends MongoRepositorySpec with ScalaFuture
     "return candidates that are ready for sifting" in {
       createSiftEligibleCandidates(UserId, "appId11")
 
-      val candidates = repository.findApplicationsReadyForSchemeSift(Commercial).futureValue
+      val candidates = repository.assignApplicationsReadyForSchemeSift(Commercial).futureValue
       candidates.size mustBe 1
       val candidate = candidates.head
       candidate.applicationId mustBe Some("appId11")
@@ -91,7 +91,7 @@ class ApplicationSiftRepositorySpec extends MongoRepositorySpec with ScalaFuture
     "sift candidate as Passed" in {
       createSiftEligibleCandidates(UserId, "appId12")
       repository.siftApplicationForScheme("appId12", SchemeEvaluationResult(Commercial, "Green")).futureValue
-      val candidates = repository.findApplicationsReadyForSchemeSift(Commercial).futureValue
+      val candidates = repository.assignApplicationsReadyForSchemeSift(Commercial).futureValue
       candidates.size mustBe 0
     }
 
@@ -104,7 +104,7 @@ class ApplicationSiftRepositorySpec extends MongoRepositorySpec with ScalaFuture
     "eligible for other schema after sifting on one" in {
       createSiftEligibleCandidates(UserId, "appId14")
       repository.siftApplicationForScheme("appId14", SchemeEvaluationResult(European, "Red")).futureValue
-      val candidates = repository.findApplicationsReadyForSchemeSift(Sdip).futureValue
+      val candidates = repository.assignApplicationsReadyForSchemeSift(Sdip).futureValue
       candidates.size mustBe 1
     }
 

@@ -46,6 +46,14 @@ trait ApplicationSiftService extends CurrentSchemeStatusHelper with CommonBSONDo
     applicationSiftRepo.nextApplicationsForSiftStage(batchSize)
   }
 
+  def assignSchemeSiftToSifter(applicationId: String, schemeId: SchemeId, userId: String) = {
+
+  }
+
+  def releaseSchemeSiftFromSifter(applicationId: String, schemeId: SchemeId, userId: String) = {
+
+  }
+
   private def requiresForms(schemeIds: Seq[SchemeId]) = {
     schemeRepo.getSchemesForId(schemeIds).exists(_.siftRequirement.contains(SiftRequirement.FORM))
   }
@@ -67,8 +75,8 @@ trait ApplicationSiftService extends CurrentSchemeStatusHelper with CommonBSONDo
     updates.map(SerialUpdateResult.fromEither)
   }
 
-  def findAndLockApplicationsReadyForSift(schemeId: SchemeId): Future[Seq[Commands.Candidate]] = {
-    applicationSiftRepo.findApplicationsReadyForSchemeSift(schemeId)
+  def applicationsReadyForSift(schemeId: SchemeId): Future[Seq[Commands.Candidate]] = {
+    applicationSiftRepo.assignApplicationsReadyForSchemeSift(schemeId)
   }
 
   def siftApplicationForScheme(applicationId: String, result: SchemeEvaluationResult): Future[Unit] = {

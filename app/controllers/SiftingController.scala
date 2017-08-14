@@ -25,6 +25,7 @@ import services.sift.ApplicationSiftService
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 object SiftingController extends SiftingController {
   val siftService = ApplicationSiftService
@@ -34,17 +35,13 @@ trait SiftingController extends BaseController {
 
   val siftService: ApplicationSiftService
 
-  def findApplicationsReadyForSchemeSifting(schemeId: String, lockForUserId: String): Action[AnyContent] = Action.async { implicit request =>
-    siftService.findAndLockApplicationsReadyForSift(SchemeId(schemeId)).map { candidates =>
+  def applicationsReadyForSifting(schemeId: String): Action[AnyContent] = Action.async { implicit request =>
+    siftService.applicationsReadyForSift(SchemeId(schemeId)).map { candidates =>
       Ok(Json.toJson(candidates))
     }
   }
 
-  def extendLockExpiry(userId: String): Action[JsValue] = Action.async { implicit request =>
-
-  }
-
-  def releaseLocks(userId: String): Action[JsValue] = Action.async {
+  def updateSifterAllocation(schemeId: String, applicationId: String, userId: String) = {
 
   }
 

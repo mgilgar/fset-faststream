@@ -116,9 +116,9 @@ class ApplicationSiftServiceSpec extends ScalaMockUnitSpec {
       val candidates = Seq(Candidate("userId1", Some("appId1"), Some(""), Some(""), Some(""), Some(""), Some(LocalDate.now), Some(Address("")),
         Some("E1 7UA"), Some("UK"), Some(ApplicationRoute.Faststream), Some("")))
 
-      (mockSiftRepo.findApplicationsReadyForSchemeSift _).expects(*).returningAsync(candidates)
+      (mockSiftRepo.assignApplicationsReadyForSchemeSift _).expects(*).returningAsync(candidates)
 
-      whenReady(service.findAndLockApplicationsReadyForSift(SchemeId("scheme1"))) { result =>
+      whenReady(service.applicationsReadyForSift(SchemeId("scheme1"))) { result =>
         result mustBe candidates
       }
     }
