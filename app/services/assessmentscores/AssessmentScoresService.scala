@@ -87,7 +87,7 @@ trait AssessmentScoresService {
       oldAllExercisesScoresMaybe <- assessmentScoresRepository.find(applicationId)
       oldAllExercisesScores = oldAllExercisesScoresMaybe.getOrElse(AssessmentScoresAllExercises(applicationId, None, None, None))
       newAllExercisesScores = updateAllExercisesWithExercise(oldAllExercisesScores, newExerciseScores)
-      _ <- assessmentScoresRepository.save(newAllExercisesScores)
+      _ <- assessmentScoresRepository.saveExercise(applicationId, assessmentExerciseType, newExerciseScores)
       _ <- updateStatusIfNeeded(newAllExercisesScores)
     } yield {
       ()

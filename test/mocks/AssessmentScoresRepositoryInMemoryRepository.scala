@@ -16,8 +16,9 @@
 
 package mocks
 
-import model.assessmentscores.AssessmentScoresAllExercises
+import model.assessmentscores.{ AssessmentScoresAllExercises, AssessmentScoresExercise }
 import model.UniqueIdentifier
+import model.command.AssessmentScoresCommands.AssessmentExerciseType.AssessmentExerciseType
 import repositories.AssessmentScoresRepository
 
 import scala.concurrent.Future
@@ -28,7 +29,11 @@ class AssessmentScoresRepositoryInMemoryRepository extends AssessmentScoresRepos
 
   def save(scores: AssessmentScoresAllExercises): Future[Unit] = ???
 
+  def saveExercise(applicationId: UniqueIdentifier, exercise: AssessmentExerciseType,
+    exercisesScores: AssessmentScoresExercise): Future[Unit] = ???
+
   def find(applicationId: UniqueIdentifier): Future[Option[AssessmentScoresAllExercises]] = ???
 
   def findAll: Future[List[AssessmentScoresAllExercises]] = ???
+
 }
