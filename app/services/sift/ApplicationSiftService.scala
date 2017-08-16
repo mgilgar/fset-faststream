@@ -18,6 +18,7 @@ package services.sift
 
 import common.FutureEx
 import factories.DateTimeFactory
+import model.Exceptions.{ NotFoundException, SchemeAlreadySifted }
 import model.{ ProgressStatuses, SchemeId, SerialUpdateResult, SiftRequirement }
 import model.command.ApplicationForSift
 import model.persisted.SchemeEvaluationResult
@@ -96,6 +97,8 @@ trait ApplicationSiftService extends CurrentSchemeStatusHelper with CommonBSONDo
       ).foldLeft(siftBson) { (acc, doc) => acc ++ doc }
 
       applicationSiftRepo.update(applicationId, predicate, mergedUpdate, action)
-    }) flatMap identity
+    }) flatMap identity recover {
+      case nfe: NotFoundException => throw SchemeAlreadySifted(s"${result.schemeId} for $applicationId already sifted")
+    }
   }
 }

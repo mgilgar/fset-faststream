@@ -16,6 +16,7 @@
 
 package controllers
 
+import model.Exceptions.SchemeAlreadySifted
 import model.{ EvaluationResults, SchemeId }
 import model.exchange.ApplicationSifting
 import model.persisted.SchemeEvaluationResult
@@ -44,7 +45,9 @@ trait SiftingController extends BaseController {
     withJsonBody[ApplicationSifting] { sift =>
       siftService.siftApplicationForScheme(sift.applicationId,
         SchemeEvaluationResult(sift.schemeId, fromPassMark(sift.result).toString)
-      ).map(_ => Ok)
+      ).map(_ => Ok) recover {
+        case sase: SchemeAlreadySifted => Conflict(sase.m)
+      }
     }
   }
 

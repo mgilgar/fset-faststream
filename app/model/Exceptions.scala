@@ -127,6 +127,8 @@ object Exceptions {
   case class SiftAnswersSubmitted(m: String) extends Exception(m)
 
   case class LastSchemeWithdrawException(m: String) extends Exception(m)
+
+  case class SchemeAlreadySifted(m: String) extends Exception(m)
 }
 
 // scalastyle:on number.of.methods
