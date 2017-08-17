@@ -32,9 +32,7 @@ case class FrameworksConfig(yamlFilePath: String)
 
 case class SchemeConfig(yamlFilePath: String)
 
-case class EventsSubTypesConfig(fsbFilePath: String, telephoneInterviewFilePath: String)
-
-case class EventsConfig(scheduleFilePath: String, subtypes: EventsSubTypesConfig)
+case class EventsConfig(scheduleFilePath: String)
 
 case class EventSubtypeConfig(yamlFilePath: String)
 
@@ -84,8 +82,6 @@ object WaitingScheduledJobConfig {
 case class CubiksGatewayConfig(url: String,
   phase1Tests: Phase1TestsConfig,
   phase2Tests: Phase2TestsConfig,
-  competenceAssessment: CubiksGatewayStandardAssessment,
-  situationalAssessment: CubiksGatewayStandardAssessment,
   reportConfig: ReportConfig,
   candidateAppUrl: String,
   emailDomain: String
