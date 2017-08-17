@@ -251,6 +251,14 @@ trait TestDataGeneratorController extends BaseController {
     Future.successful(Ok(Json.toJson(List(example1, example2))))
   }
 
+  def generateDefaultUsers(): Action[AnyContent] = Action.async { implicit request =>
+    TestDataGeneratorService.generateUsers().map { _ =>
+      Ok(Json.parse("""{"message": "success"}"""))
+    } recover {
+      case t: Throwable => InternalServerError(Json.parse(s"""{"message": "${t}"}"""))
+    }
+  }
+
   def createAdmins(numberToGenerate: Int, emailPrefix: Option[String], roles: List[String]): Action[AnyContent] =
     Action.async { implicit request =>
 
